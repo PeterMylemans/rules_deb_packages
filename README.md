@@ -1,5 +1,7 @@
 # Deb Packages Rule
 
+This is a continuation of the work started in https://github.com/bazelbuild/rules_pkg/tree/main/deb_packages
+
 ## Getting started
 
 `deb_packages` is a repository rule, and therefore made to be used in the `WORKSPACE`.
