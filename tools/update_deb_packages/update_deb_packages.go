@@ -305,7 +305,7 @@ func updateWorkspaceRule(keyring openpgp.EntityList, rule *build.Rule) {
 			distroComponents = sourceComponents[2:]
 		}
 
-		log.Printf("Fetching packages for %s %s %s", sourceComponents[0], distro, distroComponents)
+		log.Printf("Fetching packages for [%s] %s %s %s", arch, sourceComponents[0], distro, distroComponents)
 		packages := getPackages(arch, distro, []string{base_url}, distroComponents, keyring)
 		allPackages = append(allPackages, packages...)
 		mirrors = appendUniq(mirrors, base_url)
