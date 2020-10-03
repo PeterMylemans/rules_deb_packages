@@ -113,6 +113,12 @@ http_file(
     sha256 = "9c854992fc6c423efe8622c3c326a66e73268995ecbe8f685129063206a18043",
     urls = ["https://ftp-master.debian.org/keys/archive-key-10.asc"],
 )
+
+http_file(
+    name = "buster_security_archive_key",
+    sha256 = "4cf886d6df0fc1c185ce9fb085d1cd8d678bc460e6267d80a833d7ea507a0fbd",
+    urls = ["https://ftp-master.debian.org/keys/archive-key-10-security.asc"],
+)
 ```
 
 Next create a `deb_packages` rule in your WORKSPACE file without any packages defined:
