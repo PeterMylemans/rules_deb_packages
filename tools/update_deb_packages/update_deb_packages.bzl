@@ -22,8 +22,8 @@ $BASE/{update_deb_packages} {args} $@
 def _update_deb_packages_script_impl(ctx):
     args = ctx.attr.args
     script_content = _script_content.format(update_deb_packages = ctx.file._update_deb_packages.short_path, args = " ".join(args))
-    script_file = ctx.new_file(ctx.label.name + ".bash")
-    ctx.file_action(output = script_file, executable = True, content = script_content)
+    script_file = ctx.actions.declare_file(ctx.label.name + ".bash")
+    ctx.actions.run_shell(outputs = [script_file], command = script_content)
     return struct(
         files = depset([script_file]),
         runfiles = ctx.runfiles([ctx.file._update_deb_packages]),

@@ -14,7 +14,6 @@ load("@rules_deb_packages//tools/update_deb_packages:update_deb_packages.bzl", "
 update_deb_packages(
     name = "update_deb_packages",
     pgp_keys = [
-        "@jessie_archive_key//file",
-        "@stretch_archive_key//file",
+        "@buster_archive_key//file",
     ],
 )
