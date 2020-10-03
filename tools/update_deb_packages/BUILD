@@ -3,7 +3,7 @@ load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
 go_library(
     name = "go_default_library",
     srcs = ["update_deb_packages.go"],
-    importpath = "github.com/petermylemans/rules_deb_packages/tools/update_deb_packages/src",
+    importpath = "github.com/petermylemans/rules_deb_packages/tools/update_deb_packages",
     visibility = ["//visibility:private"],
     deps = [
         #"@com_github_bazelbuild_buildtools//:go_default_library",
