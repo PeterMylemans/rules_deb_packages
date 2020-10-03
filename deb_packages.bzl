@@ -1,3 +1,5 @@
+"""This modules defines a deb_packages repository rule for managing deb_packages."""
+
 def _deb_packages_impl(repository_ctx):
     # check that keys in "packages" and "packages_sha256" are the same
     for package in repository_ctx.attr.packages:
