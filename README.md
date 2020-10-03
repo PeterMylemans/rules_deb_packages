@@ -4,10 +4,12 @@
 
 `deb_packages` is a repository rule, and therefore made to be used in the `WORKSPACE`.
 
-First, tell bazel to load the rule with a `load()` statement.
+First, tell bazel to load the rule and its dependencies with a `load()` statement.
 
 ```bzl
-load("@rules_deb_packages//:deb_packages.bzl", "deb_packages")
+load("//:repositories/deps.bzl", "deb_packages_dependencies")
+
+deb_packages_dependencies()
 ```
 
 Next, for every source of deb packages, create a `deb_packages` rule.
@@ -15,6 +17,8 @@ You can define additional mirrors per package source, but it is assumed that all
 Hashes are checked after downloading files.
 
 ```bzl
+load("@rules_deb_packages//:deb_packages.bzl", "deb_packages")
+
 deb_packages(
     name = "debian_buster_amd64",
     arch = "amd64",
