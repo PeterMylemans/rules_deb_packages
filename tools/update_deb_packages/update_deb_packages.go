@@ -121,24 +121,31 @@ func compareFileWithHash(filepath string, sha256Hash string) bool {
 	return bytes.Equal(actual, target)
 }
 
-func checkPgpSignature(keyfile string, checkfile string, sigfile string) {
-	key, err := os.Open(keyfile)
-	logFatalErr(err)
-
+func checkPgpSignature(keyring openpgp.EntityList, checkfile string, sigfile string) {
 	sig, err := os.Open(sigfile)
 	logFatalErr(err)
 
 	check, err := os.Open(checkfile)
 	logFatalErr(err)
 
-	keyring, err := openpgp.ReadArmoredKeyRing(key)
-	logFatalErr(err)
-
 	_, err = openpgp.CheckArmoredDetachedSignature(keyring, check, sig)
-	logFatalErr(err)
+	if err == io.EOF {
+		// When the signature is binary instead of armored, the error is io.EOF.
+		// Let's try with binary signatures as well
+		_, err = check.Seek(0, 0)
+		logFatalErr(err)
+
+		_, err = sig.Seek(0, 0)
+		logFatalErr(err)
+
+		_, err = openpgp.CheckDetachedSignature(keyring, check, sig)
+		logFatalErr(err)
+	} else {
+		logFatalErr(err)
+	}
 }
 
-func getPackages(arch string, distroType string, distro string, mirrors []string, components []string, pgpKeyFile string) (packages []godebiancontrol.Paragraph) {
+func getPackages(arch string, distro string, mirrors []string, components []string, keyring openpgp.EntityList) (packages []godebiancontrol.Paragraph) {
 	releasefile, err := ioutil.TempFile("", "Release")
 	logFatalErr(err)
 
@@ -150,7 +157,7 @@ func getPackages(arch string, distroType string, distro string, mirrors []string
 	getFileFromMirror(releasegpgfile.Name(), "Release.gpg", distro, mirrors)
 
 	// check signature
-	checkPgpSignature(pgpKeyFile, releasefile.Name(), releasegpgfile.Name())
+	checkPgpSignature(keyring, releasefile.Name(), releasegpgfile.Name())
 
 	os.Remove(releasegpgfile.Name())
 
@@ -238,6 +245,22 @@ func getMapFieldExpr(expr build.Expr) map[string]string {
 	return m
 }
 
+func getKeyRing(projectName string, pgpKeys []string) openpgp.EntityList {
+	keyring := make(openpgp.EntityList, 0)
+	for _, pgpKeyRuleName := range pgpKeys {
+		keyfile := path.Join("bazel-"+projectName, "external", pgpKeyRuleName, "file", "downloaded")
+
+		key, err := os.Open(keyfile)
+		logFatalErr(err)
+
+		entry, err := openpgp.ReadArmoredKeyRing(key)
+		logFatalErr(err)
+
+		keyring = append(keyring, entry[0])
+	}
+	return keyring
+}
+
 func updateWorkspaceRule(rule *build.Rule) {
 	tags := rule.AttrStrings("tags")
 	for _, tag := range tags {
@@ -248,10 +271,7 @@ func updateWorkspaceRule(rule *build.Rule) {
 	}
 
 	arch := rule.AttrString("arch")
-	distroType := rule.AttrString("distro_type")
-	distro := rule.AttrString("distro")
-	mirrors := rule.AttrStrings("mirrors")
-	components := rule.AttrStrings("components")
+	sources := rule.AttrStrings("sources")
 	packages := getMapFieldExpr(rule.Attr("packages"))
 	packagesSha256 := getMapFieldExpr(rule.Attr("packages_sha256"))
 	pgpKeyRuleName := rule.AttrString("pgp_key")
@@ -274,9 +294,27 @@ func updateWorkspaceRule(rule *build.Rule) {
 	wd, err := os.Getwd()
 	logFatalErr(err)
 	projectName := path.Base(wd)
-	pgpKeyname := path.Join("bazel-"+projectName, "external", pgpKeyRuleName, "file", "downloaded")
+	keyring := getKeyRing(projectName, []string{pgpKeyRuleName})
 
-	allPackages := getPackages(arch, distroType, distro, mirrors, components, pgpKeyname)
+	var mirrors = make([]string, 0)
+	var allPackages []godebiancontrol.Paragraph
+	for _, source := range sources {
+		sourceComponents := strings.Split(source, " ")
+		if len(sourceComponents) < 2 {
+			log.Fatalf("Invalid format of source '%s'. Should be <url>|<distro>|<components>", source)
+		}
+		base_url := strings.TrimRight(sourceComponents[0], "/")
+		distro := sourceComponents[1]
+		var distroComponents []string
+		if len(sourceComponents) > 2 {
+			distroComponents = sourceComponents[2:]
+		}
+
+		log.Printf("Fetching packages for %s %s %s", sourceComponents[0], distro, distroComponents)
+		packages := getPackages(arch, distro, []string{base_url}, distroComponents, keyring)
+		allPackages = append(allPackages, packages...)
+		mirrors = appendUniq(mirrors, base_url)
+	}
 
 	newPackages := make(map[string]string)
 	newPackagesSha256 := make(map[string]string)
@@ -325,7 +363,7 @@ func updateWorkspaceRule(rule *build.Rule) {
 			}
 		}
 		if done == false {
-			log.Fatalf("Package %s isn't available in %s (rule: %s)", pack, distro, rule.Name())
+			log.Fatalf("Package %s isn't available (rule: %s)", pack, rule.Name())
 		}
 	}
 

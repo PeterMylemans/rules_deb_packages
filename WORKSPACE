@@ -57,18 +57,22 @@ http_file(
     urls = ["https://ftp-master.debian.org/keys/archive-key-10.asc"],
 )
 
+http_file(
+    name = "buster_security_archive_key",
+    sha256 = "4cf886d6df0fc1c185ce9fb085d1cd8d678bc460e6267d80a833d7ea507a0fbd",
+    urls = ["https://ftp-master.debian.org/keys/archive-key-10-security.asc"],
+)
+
 deb_packages(
     name = "debian_buster_amd64",
     arch = "amd64",
-    distro = "buster",
-    distro_type = "debian",
     mirrors = [
         "http://deb.debian.org/debian",
     ],
     packages = {
         "base-files": "pool/main/b/base-files/base-files_10.3+deb10u6_amd64.deb",
         "busybox": "pool/main/b/busybox/busybox_1.30.1-4_amd64.deb",
-        "ca-certificates": "pool/main/c/ca-certificates/ca-certificates_20190110_all.deb",
+        "ca-certificates": "pool/main/c/ca-certificates/ca-certificates_20200601~deb10u1_all.deb",
         "libc6": "pool/main/g/glibc/libc6_2.28-10_amd64.deb",
         "libssl1.1": "pool/main/o/openssl/libssl1.1_1.1.1d-0+deb10u3_amd64.deb",
         "netbase": "pool/main/n/netbase/netbase_5.6_all.deb",
@@ -78,7 +82,7 @@ deb_packages(
     packages_sha256 = {
         "base-files": "ed640f8e2ab4e44731485ac7658a269012b9318ec8c6fb7b2b78825a624a9939",
         "busybox": "1e32ea742bddec4ed5a530ee2f423cdfc297c6280bfbb45c97bf12eecf5c3ec1",
-        "ca-certificates": "f55f88c8cc8fe014fa931fa22eae763fb12771e2b2a04a07bba5e4fdf3a3da6c",
+        "ca-certificates": "794bd3ffa0fc268dc8363f8924b2ab7cf831ab151574a6c1584790ce9945cbb2",
         "libc6": "6f703e27185f594f8633159d00180ea1df12d84f152261b6e88af75667195a79",
         "libssl1.1": "b293309a892730986e779aea48e97ea94cd58f34f07fefbd432c210ee4a427e2",
         "netbase": "baf0872964df0ccb10e464b47d995acbba5a0d12a97afe2646d9a6bb97e8d79d",
@@ -86,6 +90,10 @@ deb_packages(
         "tzdata": "f9464df8a102259df6caff910b810b452fd6e2af34c73ec8729b474dc2f51c55",
     },
     pgp_key = "buster_archive_key",
+    sources = [
+        "http://deb.debian.org/debian buster main",
+        "http://deb.debian.org/debian buster-updates main",
+    ],
 )
 
 go_repository(

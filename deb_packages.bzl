@@ -37,12 +37,6 @@ exports_files(deb_files + ["deb_packages.bzl"])
 _deb_packages = repository_rule(
     _deb_packages_impl,
     attrs = {
-        "distro_type": attr.string(
-            doc = "the name of the distribution type, required - e.g. debian or ubuntu",
-        ),
-        "distro": attr.string(
-            doc = "the name of the distribution, required - e.g. wheezy or jessie-backports",
-        ),
         "arch": attr.string(
             doc = "the target package architecture, required - e.g. arm64 or amd64",
         ),
@@ -55,8 +49,8 @@ _deb_packages = repository_rule(
         "mirrors": attr.string_list(
             doc = "a list of full URLs of the package repository, required - e.g. http://deb.debian.org/debian",
         ),
-        "components": attr.string_list(
-            doc = "a list of accepted components - e.g. universe, multiverse",
+        "sources": attr.string_list(
+            doc = "a list of full sources of the package repository in format similar to apt sources.list without the deb prefix, required - e.g. 'http://deb.debian.org/debian buster main'",
         ),
         "pgp_key": attr.string(
             doc = "the name of the http_file rule that contains the pgp key that signed the Release file at <mirrorURL>/dists/<distro>/Release, required",
