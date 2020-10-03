@@ -68,6 +68,7 @@ deb_packages(
     arch = "amd64",
     mirrors = [
         "http://deb.debian.org/debian",
+        "http://deb.debian.org/debian-security",
     ],
     packages = {
         "base-files": "pool/main/b/base-files/base-files_10.3+deb10u6_amd64.deb",
@@ -89,10 +90,10 @@ deb_packages(
         "openssl": "03a133833154325c731291c8a87daef5962dcfb75dee7cdb11f7fb923de2db82",
         "tzdata": "f9464df8a102259df6caff910b810b452fd6e2af34c73ec8729b474dc2f51c55",
     },
-    pgp_key = "buster_archive_key",
     sources = [
         "http://deb.debian.org/debian buster main",
         "http://deb.debian.org/debian buster-updates main",
+        "http://deb.debian.org/debian-security buster/updates main",
     ],
 )
 

@@ -5,6 +5,7 @@ import (
 	"compress/gzip"
 	"crypto/sha256"
 	"encoding/hex"
+	"flag"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -248,7 +249,7 @@ func getMapFieldExpr(expr build.Expr) map[string]string {
 func getKeyRing(projectName string, pgpKeys []string) openpgp.EntityList {
 	keyring := make(openpgp.EntityList, 0)
 	for _, pgpKeyRuleName := range pgpKeys {
-		keyfile := path.Join("bazel-"+projectName, "external", pgpKeyRuleName, "file", "downloaded")
+		keyfile := path.Join("bazel-"+projectName, pgpKeyRuleName)
 
 		key, err := os.Open(keyfile)
 		logFatalErr(err)
@@ -261,7 +262,7 @@ func getKeyRing(projectName string, pgpKeys []string) openpgp.EntityList {
 	return keyring
 }
 
-func updateWorkspaceRule(rule *build.Rule) {
+func updateWorkspaceRule(keyring openpgp.EntityList, rule *build.Rule) {
 	tags := rule.AttrStrings("tags")
 	for _, tag := range tags {
 		// skip rules with the "manual_update" tag
@@ -274,7 +275,6 @@ func updateWorkspaceRule(rule *build.Rule) {
 	sources := rule.AttrStrings("sources")
 	packages := getMapFieldExpr(rule.Attr("packages"))
 	packagesSha256 := getMapFieldExpr(rule.Attr("packages_sha256"))
-	pgpKeyRuleName := rule.AttrString("pgp_key")
 
 	packageNames := make([]string, 0, len(packages))
 	for p := range packages {
@@ -290,11 +290,6 @@ func updateWorkspaceRule(rule *build.Rule) {
 	if reflect.DeepEqual(packageNames, packageShaNames) == false {
 		log.Fatalf("Mismatch between package names in packages and packages_sha256 in rule %s.\npackages: %s\npackages_sha256: %s", rule.Name(), packageNames, packageShaNames)
 	}
-
-	wd, err := os.Getwd()
-	logFatalErr(err)
-	projectName := path.Base(wd)
-	keyring := getKeyRing(projectName, []string{pgpKeyRuleName})
 
 	var mirrors = make([]string, 0)
 	var allPackages []godebiancontrol.Paragraph
@@ -377,25 +372,46 @@ func updateWorkspaceRule(rule *build.Rule) {
 	rule.SetAttr("packages_sha256", &build.DictExpr{List: newPackagesSha256KV})
 }
 
-func updateWorkspace(workspaceContents []byte) string {
+func updateWorkspace(keyring openpgp.EntityList, workspaceContents []byte) string {
 	f, err := build.Parse("WORKSPACE", workspaceContents)
 	logFatalErr(err)
 
 	for _, rule := range f.Rules("deb_packages") {
-		updateWorkspaceRule(rule)
+		updateWorkspaceRule(keyring, rule)
 	}
 
 	return string(build.Format(f))
 }
 
+type keyRingFiles []string
+
+func (i *keyRingFiles) String() string {
+	return "my key ring files"
+}
+
+func (i *keyRingFiles) Set(value string) error {
+	*i = append(*i, value)
+	return nil
+}
+
+var keyRingFilesFlags keyRingFiles
+
 // update WORKSPACE rule with new paths/hashes from mirrors
 func main() {
+	flag.Var(&keyRingFilesFlags, "pgp-key", "Location of a PGP key to include")
+	flag.Parse()
+
+	wd, err := os.Getwd()
+	logFatalErr(err)
+	projectName := path.Base(wd)
+	keyring := getKeyRing(projectName, keyRingFilesFlags)
+
 	workspacefile, err := os.Open("WORKSPACE")
 	logFatalErr(err)
 	wscontent, err := ioutil.ReadAll(workspacefile)
 	logFatalErr(err)
 	workspacefile.Close()
 
-	err = ioutil.WriteFile("WORKSPACE", []byte(updateWorkspace(wscontent)), 0664)
+	err = ioutil.WriteFile("WORKSPACE", []byte(updateWorkspace(keyring, wscontent)), 0664)
 	logFatalErr(err)
 }
