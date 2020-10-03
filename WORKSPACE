@@ -1,31 +1,8 @@
 workspace(name = "rules_deb_packages")
 
+# Docker rules dependencies
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive", "http_file")
 
-# Go rules dependencies
-http_archive(
-    name = "io_bazel_rules_go",
-    sha256 = "08c3cd71857d58af3cda759112437d9e63339ac9c6e0042add43f4d94caf632d",
-    urls = ["https://github.com/bazelbuild/rules_go/releases/download/v0.24.2/rules_go-v0.24.2.tar.gz"],
-)
-
-http_archive(
-    name = "bazel_gazelle",
-    sha256 = "cdb02a887a7187ea4d5a27452311a75ed8637379a1287d8eeb952138ea485f7d",
-    urls = ["https://github.com/bazelbuild/bazel-gazelle/releases/download/v0.21.1/bazel-gazelle-v0.21.1.tar.gz"],
-)
-
-load("@io_bazel_rules_go//go:deps.bzl", "go_register_toolchains", "go_rules_dependencies")
-
-go_rules_dependencies()
-
-go_register_toolchains()
-
-load("@bazel_gazelle//:deps.bzl", "gazelle_dependencies", "go_repository")
-
-gazelle_dependencies()
-
-# Docker rules dependencies
 http_archive(
     name = "io_bazel_rules_docker",
     sha256 = "4521794f0fba2e20f3bf15846ab5e01d5332e587e9ce81629c7f96c793bb7036",
@@ -47,6 +24,10 @@ container_deps()
 load("@io_bazel_rules_docker//repositories:pip_repositories.bzl", "pip_deps")
 
 pip_deps()
+
+load("//:repositories/deps.bzl", "deb_packages_dependencies")
+
+deb_packages_dependencies()
 
 # Example for using the deb_packages ruleset
 load("//:deb_packages.bzl", "deb_packages")
@@ -95,32 +76,4 @@ deb_packages(
         "http://deb.debian.org/debian buster-updates main",
         "http://deb.debian.org/debian-security buster/updates main",
     ],
-)
-
-go_repository(
-    name = "org_golang_x_crypto",
-    importpath = "golang.org/x/crypto",
-    sum = "h1:hb9wdF1z5waM+dSIICn1l0DkLVDT3hqhhQsDNUmHPRE=",
-    version = "v0.0.0-20201002170205-7f63de1d35b0",
-)
-
-go_repository(
-    name = "com_github_stapelberg_godebiancontrol",
-    importpath = "github.com/stapelberg/godebiancontrol",
-    sum = "h1:9E/p5pk1eLIriw1+F5a0QoyPTnFTdMhwWd9ICYviUCE=",
-    version = "v0.0.0-20180408134423-8c93e189186a",
-)
-
-go_repository(
-    name = "com_github_knqyf263_go_deb_version",
-    importpath = "github.com/knqyf263/go-deb-version",
-    sum = "h1:X4cedH4Kn3JPupAwwWuo4AzYp16P0OyLO9d7OnMZc/c=",
-    version = "v0.0.0-20190517075300-09fca494f03d",
-)
-
-go_repository(
-    name = "com_github_bazelbuild_buildtools",
-    importpath = "github.com/bazelbuild/buildtools",
-    sum = "h1:Et1IIXrXwhpDvR5wH9REPEZ0sUtzUoJSq19nfmBqzBY=",
-    version = "v0.0.0-20200718160251-b1667ff58f71",
 )
