@@ -6,7 +6,7 @@ go_library(
     importpath = "github.com/petermylemans/rules_deb_packages/tools/update_deb_packages",
     visibility = ["//visibility:private"],
     deps = [
-        #"@com_github_bazelbuild_buildtools//:go_default_library",
+        "@com_github_bazelbuild_buildtools//build:go_default_library",
         "@com_github_knqyf263_go_deb_version//:go_default_library",
         "@com_github_stapelberg_godebiancontrol//:go_default_library",
         "@org_golang_x_crypto//openpgp:go_default_library",

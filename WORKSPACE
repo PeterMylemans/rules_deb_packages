@@ -48,27 +48,6 @@ load("@io_bazel_rules_docker//repositories:pip_repositories.bzl", "pip_deps")
 
 pip_deps()
 
-# "golang.org/x/crypto/openpgp"
-go_repository(
-    name = "org_golang_x_crypto",
-    commit = "d585fd2cc9195196078f516b69daff6744ef5e84",
-    importpath = "golang.org/x/crypto",
-)
-
-# "github.com/knqyf263/go-deb-version"
-go_repository(
-    name = "com_github_knqyf263_go_deb_version",
-    commit = "9865fe14d09b1c729188ac810466dde90f897ee3",
-    importpath = "github.com/knqyf263/go-deb-version",
-)
-
-# "github.com/stapelberg/godebiancontrol"
-go_repository(
-    name = "com_github_stapelberg_godebiancontrol",
-    commit = "4376b22fb2c4dfda546c972f686310af907819b2",
-    importpath = "github.com/stapelberg/godebiancontrol",
-)
-
 # Example for using the deb_packages ruleset
 load("//:deb_packages.bzl", "deb_packages")
 
@@ -107,4 +86,32 @@ deb_packages(
         "tzdata": "f9464df8a102259df6caff910b810b452fd6e2af34c73ec8729b474dc2f51c55",
     },
     pgp_key = "buster_archive_key",
+)
+
+go_repository(
+    name = "org_golang_x_crypto",
+    importpath = "golang.org/x/crypto",
+    sum = "h1:hb9wdF1z5waM+dSIICn1l0DkLVDT3hqhhQsDNUmHPRE=",
+    version = "v0.0.0-20201002170205-7f63de1d35b0",
+)
+
+go_repository(
+    name = "com_github_stapelberg_godebiancontrol",
+    importpath = "github.com/stapelberg/godebiancontrol",
+    sum = "h1:9E/p5pk1eLIriw1+F5a0QoyPTnFTdMhwWd9ICYviUCE=",
+    version = "v0.0.0-20180408134423-8c93e189186a",
+)
+
+go_repository(
+    name = "com_github_knqyf263_go_deb_version",
+    importpath = "github.com/knqyf263/go-deb-version",
+    sum = "h1:X4cedH4Kn3JPupAwwWuo4AzYp16P0OyLO9d7OnMZc/c=",
+    version = "v0.0.0-20190517075300-09fca494f03d",
+)
+
+go_repository(
+    name = "com_github_bazelbuild_buildtools",
+    importpath = "github.com/bazelbuild/buildtools",
+    sum = "h1:Et1IIXrXwhpDvR5wH9REPEZ0sUtzUoJSq19nfmBqzBY=",
+    version = "v0.0.0-20200718160251-b1667ff58f71",
 )

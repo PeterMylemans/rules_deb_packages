@@ -20,10 +20,10 @@ import (
 	"sort"
 	"strings"
 
-	"golang.org/x/crypto/openpgp"
-
-	"github.com/knqyf263/go-deb-version"
+	"github.com/bazelbuild/buildtools/build"
+	version "github.com/knqyf263/go-deb-version"
 	"github.com/stapelberg/godebiancontrol"
+	"golang.org/x/crypto/openpgp"
 )
 
 var FORCE_PACKAGE_IDENT = `{
@@ -452,15 +452,39 @@ func setStringField(fieldName string, fieldContents string, fileName string, rul
 	return out.String()
 }
 
-func updateWorkspaceRule(workspaceContents []byte, rule string) string {
-	arch := getStringField("arch", "-", rule, workspaceContents)
-	distroType := getStringField("distro_type", "-", rule, workspaceContents)
-	distro := getStringField("distro", "-", rule, workspaceContents)
-	mirrors := getListField("mirrors", "-", rule, workspaceContents)
-	components := getListField("components", "-", rule, workspaceContents)
-	packages := getMapField("packages", "-", rule, workspaceContents)
-	packagesSha256 := getMapField("packages_sha256", "-", rule, workspaceContents)
-	pgpKeyRuleName := getStringField("pgp_key", "-", rule, workspaceContents)
+func getMapFieldExpr(expr build.Expr) map[string]string {
+	list, ok := expr.(*build.DictExpr)
+	if !ok {
+		return nil
+	}
+
+	m := make(map[string]string)
+	for _, l := range list.List {
+		key := l.(*build.KeyValueExpr).Key.(*build.StringExpr).Value
+		val := l.(*build.KeyValueExpr).Value.(*build.StringExpr).Value
+		m[key] = val
+	}
+
+	return m
+}
+
+func updateWorkspaceRule(rule *build.Rule) {
+	tags := rule.AttrStrings("tags")
+	for _, tag := range tags {
+		// skip rules with the "manual_update" tag
+		if tag == "manual_update" {
+			return
+		}
+	}
+
+	arch := rule.AttrString("arch")
+	distroType := rule.AttrString("distro_type")
+	distro := rule.AttrString("distro")
+	mirrors := rule.AttrStrings("mirrors")
+	components := rule.AttrStrings("components")
+	packages := getMapFieldExpr(rule.Attr("packages"))
+	packagesSha256 := getMapFieldExpr(rule.Attr("packages_sha256"))
+	pgpKeyRuleName := rule.AttrString("pgp_key")
 
 	packageNames := make([]string, 0, len(packages))
 	for p := range packages {
@@ -474,10 +498,11 @@ func updateWorkspaceRule(workspaceContents []byte, rule string) string {
 	}
 	sort.Strings(packageShaNames)
 	if reflect.DeepEqual(packageNames, packageShaNames) == false {
-		log.Fatalf("Mismatch between package names in packages and packages_sha256 in rule %s.\npackages: %s\npackages_sha256: %s", rule, packageNames, packageShaNames)
+		log.Fatalf("Mismatch between package names in packages and packages_sha256 in rule %s.\npackages: %s\npackages_sha256: %s", rule.Name(), packageNames, packageShaNames)
 	}
 
 	wd, err := os.Getwd()
+	logFatalErr(err)
 	projectName := path.Base(wd)
 	pgpKeyname := path.Join("bazel-"+projectName, "external", pgpKeyRuleName, "file", "downloaded")
 
@@ -530,44 +555,29 @@ func updateWorkspaceRule(workspaceContents []byte, rule string) string {
 			}
 		}
 		if done == false {
-			log.Fatalf("Package %s isn't available in %s (rule: %s)", pack, distro, rule)
+			log.Fatalf("Package %s isn't available in %s (rule: %s)", pack, distro, rule.Name())
 		}
 	}
 
-	pkgstring, err := json.Marshal(newPackages)
-	logFatalErr(err)
-	pkgshastring, err := json.Marshal(newPackagesSha256)
-	logFatalErr(err)
-
-	// set packages
-	workspaceContents = []byte(setStringField("packages", string(pkgstring), "-", rule, workspaceContents, &FORCE_PACKAGE_IDENT))
-	// set packages_sha256
-	workspaceContents = []byte(setStringField("packages_sha256", string(pkgshastring), "-", rule, workspaceContents, nil))
-	// final run that just replaces a known value with itself to make sure the output is prettyfied
-	workspaceContents = []byte(setStringField("distro", "\""+distro+"\"", "-", rule, workspaceContents, nil))
-
-	return string(workspaceContents)
+	var newPackagesKV []build.Expr
+	var newPackagesSha256KV []build.Expr
+	for _, pkgName := range packageNames {
+		newPackagesKV = append(newPackagesKV, &build.KeyValueExpr{Key: &build.StringExpr{Value: pkgName}, Value: &build.StringExpr{Value: newPackages[pkgName]}})
+		newPackagesSha256KV = append(newPackagesSha256KV, &build.KeyValueExpr{Key: &build.StringExpr{Value: pkgName}, Value: &build.StringExpr{Value: newPackagesSha256[pkgName]}})
+	}
+	rule.SetAttr("packages", &build.DictExpr{List: newPackagesKV})
+	rule.SetAttr("packages_sha256", &build.DictExpr{List: newPackagesSha256KV})
 }
 
 func updateWorkspace(workspaceContents []byte) string {
-	rules := getListField("name", "-", "%deb_packages", workspaceContents)
-	cleanedRules := make([]string, len(rules))
-	copy(cleanedRules, rules)
+	f, err := build.Parse("WORKSPACE", workspaceContents)
+	logFatalErr(err)
 
-	for i, rule := range rules {
-		tags := getListField("tags", "-", rule, workspaceContents)
-		for _, tag := range tags {
-			// drop rules with the "manual_update" tag
-			if tag == "manual_update" {
-				cleanedRules = append(cleanedRules[:i], cleanedRules[i+1:]...)
-			}
-		}
+	for _, rule := range f.Rules("deb_packages") {
+		updateWorkspaceRule(rule)
 	}
 
-	for _, rule := range cleanedRules {
-		workspaceContents = []byte(updateWorkspaceRule(workspaceContents, rule))
-	}
-	return string(workspaceContents)
+	return string(build.Format(f))
 }
 
 // add new package names to WORKSPACE rule
