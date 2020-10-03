@@ -5,7 +5,6 @@ import (
 	"compress/gzip"
 	"crypto/sha256"
 	"encoding/hex"
-	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -13,9 +12,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
-	"os/exec"
 	"path"
-	"path/filepath"
 	"reflect"
 	"sort"
 	"strings"
@@ -25,13 +22,6 @@ import (
 	"github.com/stapelberg/godebiancontrol"
 	"golang.org/x/crypto/openpgp"
 )
-
-var FORCE_PACKAGE_IDENT = `{
-  "IsListArg": {
-    "packages": false
-  }
-}
-`
 
 func appendUniq(slice []string, v string) []string {
 	for _, x := range slice {
@@ -232,226 +222,6 @@ func getPackages(arch string, distroType string, distro string, mirrors []string
 	return parsed
 }
 
-func getStringField(fieldName string, fileName string, ruleName string, workspaceContents []byte) string {
-	// buildozer 'print FIELDNAME_GOES_HERE' FILENAME_GOES_HERE:RULENAME_GOES_HERE <WORKSPACE
-	cmd := exec.Command("buildozer", "print "+fieldName, fileName+":"+ruleName)
-	wsreader := bytes.NewReader(workspaceContents)
-	if fileName == "-" {
-		// see edit.stdinPackageName why this is a "-"
-		cmd.Stdin = wsreader
-	}
-	var out bytes.Buffer
-	cmd.Stdout = &out
-	err := cmd.Run()
-	if err != nil {
-		exiterr, ok := err.(*exec.ExitError)
-		if ok == true {
-			// not every platform might have exit codes
-			// see https://groups.google.com/forum/#!topic/golang-nuts/MI4TyIkQqqg
-			exitCode := exiterr.Sys().(interface {
-				ExitStatus() int
-			}).ExitStatus()
-			// Return code 3 is the intended behaviour for buildozer when using "print" commands
-			if exitCode != 3 {
-				log.Print("Error in getStringField, command: ", cmd)
-				logFatalErr(err)
-			}
-		} else {
-			logFatalErr(err)
-		}
-	}
-
-	// remove trailing newline
-	return strings.TrimSpace(out.String())
-}
-
-func getListField(fieldName string, fileName string, ruleName string, workspaceContents []byte) []string {
-	// buildozer 'print FIELDNAME_GOES_HERE' FILENAME_GOES_HERE:RULENAME_GOES_HERE <WORKSPACE
-	// TODO: better failure message if buildozer is not in PATH
-	cmd := exec.Command("buildozer", "print "+fieldName, fileName+":"+ruleName)
-	wsreader := bytes.NewReader(workspaceContents)
-	if fileName == "-" {
-		// see edit.stdinPackageName why this is a "-"
-		cmd.Stdin = wsreader
-	}
-	var out bytes.Buffer
-	cmd.Stdout = &out
-	err := cmd.Run()
-	if err != nil {
-		exiterr, ok := err.(*exec.ExitError)
-		if ok == true {
-			// not every platform might have exit codes
-			// see https://groups.google.com/forum/#!topic/golang-nuts/MI4TyIkQqqg
-			exitCode := exiterr.Sys().(interface {
-				ExitStatus() int
-			}).ExitStatus()
-			// Return code 3 is the intended behaviour for buildozer when using "print" commands
-			if exitCode != 3 {
-				log.Print("Error in getListField, command: ", cmd)
-				logFatalErr(err)
-			}
-		} else {
-			logFatalErr(err)
-		}
-	}
-
-	trimmedOut := strings.TrimSpace(out.String())
-	if trimmedOut == "(missing)" {
-		return []string{}
-	}
-	var resultlist []string
-	// remove trailing newline, remove [] and split at spaces
-	returnlist := strings.Split(strings.Replace(strings.Trim(trimmedOut, "[]"), "\n", ",", -1), " ")
-	// also split at commas
-	for _, result := range returnlist {
-		resultlist = append(resultlist, strings.Split(result, ",")...)
-	}
-
-	// Example output for querying a missing field:
-	// rule "//-:foo" has no attribute "bar"
-	// (missing)
-	if len(resultlist) == 2 {
-		if resultlist[1] == "(missing)" {
-			return []string{}
-		}
-	}
-
-	return resultlist
-}
-
-func getMapField(fieldName string, fileName string, ruleName string, workspaceContents []byte) map[string]string {
-	// buildozer 'print FIELDNAME_GOES_HERE' FILENAME_GOES_HERE:RULENAME_GOES_HERE <WORKSPACE
-	cmd := exec.Command("buildozer", "print "+fieldName, fileName+":"+ruleName)
-	wsreader := bytes.NewReader(workspaceContents)
-	if fileName == "-" {
-		// see edit.stdinPackageName why this is a "-"
-		cmd.Stdin = wsreader
-	}
-	var out bytes.Buffer
-	cmd.Stdout = &out
-	err := cmd.Run()
-	if err != nil {
-		exiterr, ok := err.(*exec.ExitError)
-		if ok == true {
-			// not every platform might have exit codes
-			// see https://groups.google.com/forum/#!topic/golang-nuts/MI4TyIkQqqg
-			exitCode := exiterr.Sys().(interface {
-				ExitStatus() int
-			}).ExitStatus()
-			// Return code 3 is the intended behaviour for buildozer when using "print" commands
-			if exitCode != 3 {
-				log.Print("Error in getMapField, command: ", cmd)
-				logFatalErr(err)
-			}
-		} else {
-			logFatalErr(err)
-		}
-	}
-	m := make(map[string]string)
-
-	for _, line := range strings.Split(out.String(), "\n") {
-		var key string
-		for i, token := range strings.Split(strings.Trim(strings.TrimSpace(line), ",{}"), ":") {
-			if i%2 == 0 {
-				// new key
-				key = strings.Trim(token, " \"")
-			} else {
-				// value (new key was set in previous iteration)
-				m[key] = strings.Trim(token, " \"")
-			}
-		}
-	}
-	return m
-}
-
-func getAllLabels(labelName string, fileName string, ruleName string, workspaceContents []byte) map[string][]string {
-	// buildozer 'print label LABELNAME_GOES_HERE' FILENAME_GOES_HERE:RULENAME_GOES_HERE <WORKSPACE
-	cmd := exec.Command("buildozer", "print label "+labelName, fileName+":"+ruleName)
-	wsreader := bytes.NewReader(workspaceContents)
-	if fileName == "-" {
-		// see edit.stdinPackageName why this is a "-"
-		cmd.Stdin = wsreader
-	}
-	var out bytes.Buffer
-	cmd.Stdout = &out
-	err := cmd.Run()
-	if err != nil {
-		exiterr, ok := err.(*exec.ExitError)
-		if ok == true {
-			// not every platform might have exit codes
-			// see https://groups.google.com/forum/#!topic/golang-nuts/MI4TyIkQqqg
-			exitCode := exiterr.Sys().(interface {
-				ExitStatus() int
-			}).ExitStatus()
-			// Return code 3 is the intended behaviour for buildozer when using "print" commands
-			if exitCode != 3 {
-				log.Print("Error in getAllLabels, command: ", cmd)
-				logFatalErr(err)
-			}
-		} else {
-			logFatalErr(err)
-		}
-	}
-
-	// output is quite messed up... best indication for useful lines is that a line ending in "," contains stuff we look for.
-	pkgs := make(map[string][]string)
-
-	for _, line := range strings.Split(out.String(), "\n") {
-		if strings.HasSuffix(line, ",") {
-			name := strings.TrimSpace(strings.Split(line, "[")[0])
-			pkgs[name] = appendUniq(pkgs[name], strings.Trim(strings.TrimSpace(strings.Split(line, "[")[1]), "\",]"))
-		}
-	}
-	return pkgs
-}
-
-func setStringField(fieldName string, fieldContents string, fileName string, ruleName string, workspaceContents []byte, forceTable *string) string {
-	// buildozer 'set FIELDNAME_GOES_HERE FIELDCONTENTS_GO_HERE' FILENAME_GOES_HERE:RULENAME_GOES_HERE <WORKSPACE
-	// log.Printf("(setStringField) buildozer 'set %s %s' %s:%s\n", fieldName, fieldContents, fileName, ruleName)
-	var cmd *exec.Cmd
-	if forceTable != nil {
-		dir, err := ioutil.TempDir("", "table_hack")
-		defer os.RemoveAll(dir)
-		if err != nil {
-			logFatalErr(err)
-		}
-		tableFile := filepath.Join(dir, "force_table.json")
-		if err := ioutil.WriteFile(tableFile, []byte(*forceTable), 0666); err != nil {
-			logFatalErr(err)
-		}
-		cmd = exec.Command("buildozer", "-add_tables="+tableFile, "set "+fieldName+" "+fieldContents, fileName+":"+ruleName)
-	} else {
-		cmd = exec.Command("buildozer", "set "+fieldName+" "+fieldContents, fileName+":"+ruleName)
-	}
-	wsreader := bytes.NewReader(workspaceContents)
-	if fileName == "-" {
-		// see edit.stdinPackageName why this is a "-"
-		cmd.Stdin = wsreader
-	}
-	var out bytes.Buffer
-	cmd.Stdout = &out
-	err := cmd.Run()
-	if err != nil {
-		exiterr, ok := err.(*exec.ExitError)
-		if ok == true {
-			// not every platform might have exit codes
-			// see https://groups.google.com/forum/#!topic/golang-nuts/MI4TyIkQqqg
-			exitCode := exiterr.Sys().(interface {
-				ExitStatus() int
-			}).ExitStatus()
-			// Return code 3 is the intended behaviour for buildozer when using "set" commands that don't change anything
-			if exitCode != 3 {
-				log.Print("Error in setStringField, command: ", cmd)
-				logFatalErr(err)
-			}
-		} else {
-			logFatalErr(err)
-		}
-	}
-
-	return out.String()
-}
-
 func getMapFieldExpr(expr build.Expr) map[string]string {
 	list, ok := expr.(*build.DictExpr)
 	if !ok {
@@ -580,55 +350,6 @@ func updateWorkspace(workspaceContents []byte) string {
 	return string(build.Format(f))
 }
 
-// add new package names to WORKSPACE rule
-func addNewPackagesToWorkspace(workspaceContents []byte) string {
-	// TODO: add more rule types here if necessary
-	// e.g. cacerts()
-	allDebs := make(map[string][]string)
-	for _, rule_type := range []string{"container_layer", "container_image"} {
-		tmp := getAllLabels("debs", "//...", "%"+rule_type, workspaceContents)
-		for k, _ := range tmp {
-			if _, ok := allDebs[k]; !ok {
-				allDebs[k] = make([]string, 0)
-			}
-			for _, pack := range tmp[k] {
-				allDebs[k] = appendUniq(allDebs[k], pack)
-			}
-		}
-	}
-
-	for rule := range allDebs {
-		tags := getListField("tags", "-", rule, workspaceContents)
-		for _, tag := range tags {
-			// drop rules with the "manual_update" tag
-			if tag == "manual_update" {
-				delete(allDebs, rule)
-			}
-		}
-	}
-
-	for rule, debs := range allDebs {
-		packages := getMapField("packages", "-", rule, workspaceContents)
-		packagesSha256 := getMapField("packages_sha256", "-", rule, workspaceContents)
-		for _, deb := range debs {
-			packages[deb] = "placeholder"
-			packagesSha256[deb] = "placeholder"
-		}
-
-		pkgstring, err := json.Marshal(packages)
-		logFatalErr(err)
-		pkgshastring, err := json.Marshal(packagesSha256)
-		logFatalErr(err)
-
-		// set packages
-		workspaceContents = []byte(setStringField("packages", string(pkgstring), "-", rule, workspaceContents, &FORCE_PACKAGE_IDENT))
-		// set packages_sha256
-		workspaceContents = []byte(setStringField("packages_sha256", string(pkgshastring), "-", rule, workspaceContents, nil))
-	}
-
-	return string(workspaceContents)
-}
-
 // update WORKSPACE rule with new paths/hashes from mirrors
 func main() {
 	workspacefile, err := os.Open("WORKSPACE")
@@ -637,7 +358,6 @@ func main() {
 	logFatalErr(err)
 	workspacefile.Close()
 
-	err = ioutil.WriteFile("WORKSPACE", []byte(updateWorkspace([]byte(addNewPackagesToWorkspace(wscontent)))), 0664)
+	err = ioutil.WriteFile("WORKSPACE", []byte(updateWorkspace(wscontent)), 0664)
 	logFatalErr(err)
-
 }
