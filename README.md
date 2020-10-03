@@ -1,62 +1,14 @@
-# Examples
+# Deb Packages Rule
 
-### **Downloading minimal python library packages from a snapshot of `debian jessie`**.
+## Gettng started
 
 `deb_packages` is a repository rule, and therefore made to be used in the `WORKSPACE`.
 
 First, tell bazel to load the rule with a `load()` statement.
 
 ```bzl
-load("//deb_packages:deb_packages.bzl", "deb_packages")
+load("@rules_deb_packages//:deb_packages.bzl", "deb_packages")
 ```
-
-Next, create a http_file rule that points to a PGP armored public key.
-It is highly recommended to also specify the sha256 hash of the key file to make sure it is untampered.
-This key must be the one that signed the `Release` file for the distribution that you'll specify in the next step.
-
-This is necessary because the `update_deb_packages` helper tool verifies files according to https://wiki.debian.org/SecureApt
-
-Here is for example a list of keys for Debian: https://ftp-master.debian.org/keys.html (note the https - it is important that you are sure the fingerprints are directly from the Debian project)
-
-To verify that a key you downloaded has the correct fingerprint, you can download it locally and run `gpg --with-fingerprint keyfile.asc`.
-If no fingerprint is displayed, try again with `gpg2` instead of `gpg`.
-The fingerprint of the downloaded key must exactly match the fingerprint you obtained via a trusted channel.
-
-After verifying, you can run `sha256sum keyfile.asc` to get a hash that ensures that you'll receive the same file from now on.
-
-```
-# Look on https://ftp-master.debian.org/keys.html for the key and its fingerprint you want to use
-# Also verify the fingerprint is correct via a different source (mailing lists, other web sites, colleagues, different internet connections...)
-
-wget -q https://ftp-master.debian.org/keys/archive-key-8.asc
-
-gpg2 --with-fingerprint archive-key-8.asc
-pub  rsa4096/2B90D010 2014-11-21 [expires: 2022-11-19]
-      Key fingerprint = 126C 0D24 BD8A 2942 CC7D  F8AC 7638 D044 2B90 D010
-uid                   Debian Archive Automatic Signing Key (8/jessie) <ftpmaster@debian.org>
-
-# Manually verify that this is the correct fingerprint that you obtained before
-
-sha256sum archive-key-8.asc
-e42141a829b9fde8392ea2c0e329321bb29e5c0453b0b48e33c9f88bdc4873c5  archive-key-8.asc
-```
-
-Now enter this information in your `http_file` rule:
-
-```bzl
-http_file(
-    name = "jessie_archive_key",
-    sha256 = "e42141a829b9fde8392ea2c0e329321bb29e5c0453b0b48e33c9f88bdc4873c5",
-    urls = ["https://ftp-master.debian.org/keys/archive-key-8.asc"],
-)
-```
-
-You can of course also use the key your organization uses internally to sign their Debian style repositories instead of the ones used by the Debian project.
-
-Another good practice is to mirror this file, maybe at a location you control in case you are worried that the Debian project might not always be able to deliver this file to you.
-
-Also take note of the `urls` syntax instead of the deprecated single `url`
-
 
 Next, for every source of deb packages, create a `deb_packages` rule.
 You can define additional mirrors per package source, but it is assumed that all these mirrors will serve the exact same files.
@@ -64,64 +16,139 @@ Hashes are checked after downloading files.
 
 ```bzl
 deb_packages(
-    name = "debian_jessie_amd64",
+    name = "debian_buster_amd64",
     arch = "amd64",
-    distro = "jessie",
-    distro_type = "debian",
     mirrors = [
         "http://deb.debian.org/debian",
-        "http://my.private.mirror/debian",
+        "http://deb.debian.org/debian-security",
     ],
     packages = {
-        "libpython2.7-minimal": "pool/main/p/python2.7/libpython2.7-minimal_2.7.9-2+deb8u1_amd64.deb",
-        "libpython2.7-stdlib": "pool/main/p/python2.7/libpython2.7-stdlib_2.7.9-2+deb8u1_amd64.deb",
-        "python2.7-minimal": "pool/main/p/python2.7/python2.7-minimal_2.7.9-2+deb8u1_amd64.deb",
-        "zlib1g": "pool/main/z/zlib/zlib1g_1.2.8.dfsg-2+b1_amd64.deb",
+        "base-files": "pool/main/b/base-files/base-files_10.3+deb10u6_amd64.deb",
+        "busybox": "pool/main/b/busybox/busybox_1.30.1-4_amd64.deb",
+        "ca-certificates": "pool/main/c/ca-certificates/ca-certificates_20200601~deb10u1_all.deb",
+        "libc6": "pool/main/g/glibc/libc6_2.28-10_amd64.deb",
+        "libssl1.1": "pool/main/o/openssl/libssl1.1_1.1.1d-0+deb10u3_amd64.deb",
+        "netbase": "pool/main/n/netbase/netbase_5.6_all.deb",
+        "openssl": "pool/main/o/openssl/openssl_1.1.1d-0+deb10u3_amd64.deb",
+        "tzdata": "pool/main/t/tzdata/tzdata_2020a-0+deb10u1_all.deb",
     },
     packages_sha256 = {
-        "libpython2.7-minimal": "916e2c541aa954239cb8da45d1d7e4ecec232b24d3af8982e76bf43d3e1758f3",
-        "libpython2.7-stdlib": "cf1c9dfc12d6cfd42bb14bfb46ee3cec0f6ebc720a1419f017396739953b12c5",
-        "python2.7-minimal": "c89199f908d5a508d8d404efc0e1aef3d9db59ea23bd4532df9e59941643fcfb",
-        "zlib1g": "b75102f61ace79c14ea6f06fdd9509825ee2af694c6aa503253df4e6659d6772",
+        "base-files": "ed640f8e2ab4e44731485ac7658a269012b9318ec8c6fb7b2b78825a624a9939",
+        "busybox": "1e32ea742bddec4ed5a530ee2f423cdfc297c6280bfbb45c97bf12eecf5c3ec1",
+        "ca-certificates": "794bd3ffa0fc268dc8363f8924b2ab7cf831ab151574a6c1584790ce9945cbb2",
+        "libc6": "6f703e27185f594f8633159d00180ea1df12d84f152261b6e88af75667195a79",
+        "libssl1.1": "b293309a892730986e779aea48e97ea94cd58f34f07fefbd432c210ee4a427e2",
+        "netbase": "baf0872964df0ccb10e464b47d995acbba5a0d12a97afe2646d9a6bb97e8d79d",
+        "openssl": "03a133833154325c731291c8a87daef5962dcfb75dee7cdb11f7fb923de2db82",
+        "tzdata": "f9464df8a102259df6caff910b810b452fd6e2af34c73ec8729b474dc2f51c55",
     },
-    pgp_key = "jessie_archive_key",
+    sources = [
+        "http://deb.debian.org/debian buster main",
+        "http://deb.debian.org/debian buster-updates main",
+        "http://deb.debian.org/debian-security buster/updates main",
+    ],
 )
 ```
 
 Internally `.deb` files referenced here will be downloaded by Bazel, renamed to their SHA256 hash (not all characters used in file names are legal in bazel names) and made available in a dictionary named the same as the `deb_packages` rule.
 This dictionary is made available in a file named `deb_packages.bzl` in the `debs` subfolder of this rule.
-You can find the generated and downloaded files in the `./bazel-distroless/external/your_rule_name/debs` folder after building the project if you're interested.
+You can find the generated and downloaded files in the `./bazel-YourWorkSpace/external/your_rule_name/debs` folder after building the project if you're interested.
 
-To actually use the `.deb` files in a BUILD file rule like `docker_build`, you first have to load all dictionaries of package sources you want to use.
+To actually use the `.deb` files in a BUILD file rule like `container_image`, you first have to load all dictionaries of package sources you want to use.
 This is done with the `load("@your_rule_name//debs:deb_packages.bzl", "your_rule_name")` line.
 Then you can use the dictionary named the same as the `deb_packages` rule to refer to the packages you defined in the WORKSPACE file.
 
 ```bzl
-load("@debian_jessie_amd64//debs:deb_packages.bzl", "debian_jessie_amd64")
+load("@io_bazel_rules_docker//container:container.bzl", "container_image")
+load("@debian_buster_amd64//debs:deb_packages.bzl", "debian_buster_amd64")
 
-docker_build(
-    name = "python27",
-    base = "//base:base",
+container_image(
+    name = "base_buster",
     debs = [
-        debian_jessie_amd64["libpython2.7-minimal"],
-        debian_jessie_amd64["libpython2.7-stdlib"],
-        debian_jessie_amd64["python2.7-minimal"],
-        debian_jessie_amd64["zlib1g"],
-        ],
-    entrypoint = [
-        "/usr/bin/python2.7",
+        debian_buster_amd64["base-files"],
+        debian_buster_amd64["netbase"],
+        debian_buster_amd64["tzdata"],
+        debian_buster_amd64["libc6"],
+        debian_buster_amd64["libssl1.1"],
+        debian_buster_amd64["busybox"],
     ],
-    symlinks = {
-        "/usr/bin/python": "/usr/bin/python2.7",
-    },
+    entrypoint = [
+        "busybox",
+        "sh",
+    ],
+    env = {"PATH": "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"},
 )
 ```
 
-### **Adding new packages or package sources**
+## Adding/updating new packages or package sources
 
-#### Manually
+### Automatically using the `update_deb_packages` tool
 
-Chosse a Debian mirror that you want to use, for example http://deb.debian.org/debian.
+As you saw, most of the information is already available on mirrors anyways as soon as you know the distro, exact package name, architecture and version.
+If you enter the correct rule name for the `pgp_key` field, this also means that you can do this in a verified chain of trust.
+
+The `update_deb_packages` tool can help you with this.
+
+To use it, first add an update_deb_packages rule to your workspaces top-level BUILD file.
+
+```bzl
+load("@rules_deb_packages//tools/update_deb_packages:update_deb_packages.bzl", "update_deb_packages")
+
+update_deb_packages(
+    name = "update_deb_packages",
+    pgp_keys = [
+        "@buster_archive_key//file",
+        "@buster_security_archive_key//file",
+    ],
+)
+```
+
+The update tool will check the signatures of the release info before updating the hashes of the packages. So you need to tell it about the trusted PGP keys typically obtained from https://ftp-master.debian.org/keys.html.
+
+Also create a `http_file` rule in your WORKSPACE that references this key and make sure to include a SHA256 hash, so it won't change later:
+
+```bzl
+http_file(
+    name = "buster_archive_key",
+    sha256 = "9c854992fc6c423efe8622c3c326a66e73268995ecbe8f685129063206a18043",
+    urls = ["https://ftp-master.debian.org/keys/archive-key-10.asc"],
+)
+```
+
+Next create a `deb_packages` rule in your WORKSPACE file without any packages defined:
+
+```bzl
+deb_packages(
+    name = "debian_buster_amd64",
+    arch = "amd64",
+    mirrors = [
+        "http://deb.debian.org/debian",
+        "http://deb.debian.org/debian-security",
+    ],
+    packages = {
+        "base-files": "",
+        "busybox": "",
+    },
+    packages_sha256 = {
+        "base-files": "",
+        "busybox": "",
+    },
+    sources = [
+        "http://deb.debian.org/debian buster main",
+        "http://deb.debian.org/debian buster-updates main",
+        "http://deb.debian.org/debian-security buster/updates main",
+    ],
+)
+```
+
+Now run `bazel run update_deb_packages` (similar to the `gazelle` tool used by the golang Bazel rules) and the helper tool will fetch the relevant files from the mirror(s) and add the data for missing packages at the respective `deb_packages` rule.
+
+It will also update any existing packages to either the most recent version available on the mirror or a version you specified in the package name (`package=version`).
+The string `latest` is also supported if you want to use version pinning.
+
+### Manually
+
+Choose a Debian mirror that you want to use, for example http://deb.debian.org/debian.
 
 Visit the `/dists/` directory on that mirror and choose the distro you want to use, for example `jessie`.
 
@@ -162,8 +189,6 @@ Now enter this information in the `WORKSPACE` file in a `deb_packages` rule:
 deb_packages(
     name = "my_new_manual_source",
     arch = "amd64",
-    distro = "jessie",
-    distro_type = "debian",
     mirrors = [
         "http://deb.debian.org/debian",
         "http://my.private.mirror/debian",
@@ -174,73 +199,18 @@ deb_packages(
     packages_sha256 = {
         "libpython2.7-minimal": "916e2c541aa954239cb8da45d1d7e4ecec232b24d3af8982e76bf43d3e1758f3",
     },
-    pgp_key = "jessie_archive_key",
 )
 ```
-
-#### Automatically using the `update_deb_packages` tool
-
-As you saw, most of the information is already available on mirrors anyways as soon as you know the distro, exact package name, architecture and version.
-If you enter the correct rule name for the `pgp_key` field, this also means that you can do this in a verified chain of trust.
-
-The `update_deb_packages` tool can help you with this.
-
-To use it, just create a `deb_packages` rule in your WORKSPACE file without any packages defined:
-
-```bzl
-deb_packages(
-    name = "my_new_automatic_source",
-    arch = "amd64",
-    distro = "jessie",
-    distro_type = "debian",
-    mirrors = [
-        "http://deb.debian.org/debian",
-        "http://my.private.mirror/debian",
-    ],
-    packages = {},
-    packages_sha256 = {},
-    pgp_key = "jessie_archive_key",
-)
-```
-
-Now use this rule in your `BUILD` files, as if the packages were already defined:
-
-```bzl
-load("@my_new_automatic_source//debs:deb_packages.bzl", "my_new_automatic_source")
-
-docker_build(
-    name = "python27",
-    base = "//base:base",
-    debs = [
-        my_new_automatic_source["libpython2.7-minimal"],
-        my_new_automatic_source["libpython2.7-stdlib"],
-        my_new_automatic_source["python2.7-minimal"],
-        my_new_automatic_source["zlib1g"],
-        ],
-    entrypoint = [
-        "/usr/bin/python2.7",
-    ],
-    symlinks = {
-        "/usr/bin/python": "/usr/bin/python2.7",
-    },
-)
-```
-
-Now run `bazel run update_deb_packages` (similar to the `gazelle` tool used by the golang Bazel rules) and the helper tool will fetch the relevant files from the mirror(s), parse BUILD files for `docker_build` rules and add the data for missing packages at the respective `deb_packages` rule.
-It uses the `buildifier` and `buildozer` tools from [https://github.com/bazelbuild/buildtools](https://github.com/bazelbuild/buildtools), which need to be available on your $PATH.
-
-It will also update any existing packages to either the most recent version available on the mirror or a version you specified in the package name (`package=version`).
-The string `latest` is also supported if you want to use version pinning.
 
 # Reference
 
 ## deb_packages
 
 ```python
-deb_packages(name, arch, distro, distro_type, components, mirrors, packages, packages_sha256)
+deb_packages(name, arch, mirrors, packages, packages_sha256, sources)
 ```
 
-A rule that downloads `.deb` packages from a Debian style repository and makes them available in the WORKSPACE.
+A **workspace** rule that downloads `.deb` packages from a Debian style repository and makes them available in the WORKSPACE.
 
 For a `deb_packages` rule named `foo_bar`, packages can be used by loading `load("@foo_bar//debs:deb_packages.bzl", "foo_bar")` into your `BUILD` file, then referencing the package with `foo_bar['packagename']`.
 
@@ -275,28 +245,6 @@ Every key name in the `packages` section must exactly match a key name in the `p
       </td>
     </tr>
     <tr>
-      <td><code>distro</code></td>
-      <td>
-        <p><code>the name of the distribution, required</code></p>
-        <p>Examples: wheezy, jessie, jessie-backports, etc.</p>
-      </td>
-    </tr>
-    <tr>
-      <td><code>distro_type</code></td>
-      <td>
-        <p><code>the name of the distribution type, required</code></p>
-        <p>currently only <code>debian</code> and <code>ubuntu</code> are supported</p>
-      </td>
-    </tr>
-    <tr>
-      <td><code>components</code></td>
-      <td>
-        <p><code>the list of components to search packages in, optional</code></p>
-        <p>If missing, all components available in the repository will be used</p>
-        <p>Examples: universe, multiverse, security</p>
-      </td>
-    </tr>
-    <tr>
       <td><code>mirrors</code></td>
       <td>
         <p><code>the full url of the package repository, required</code></p>
@@ -321,11 +269,45 @@ Every key name in the `packages` section must exactly match a key name in the `p
       </td>
     </tr>
     <tr>
-      <td><code>pgp_key</code></td>
+      <td><code>sources</code></td>
       <td>
-        <p><code>the name of the http_file rule that points to a file containing an armored PGP key, required</code></p>
-        <p>This PGP key must be one that signed the <code>Release</code> file, meaning the signature of the <code>Release.gpg</code> file of the repository must verify with this key.</p>
-        <p>This is not checked when downloading individual deb packages, it is used by the helper tool to establish a chain of trusted inputs when updating file paths and hashes.</p>
+        <p><code>a list of full sources of the package repository in format similar to apt sources.list without the deb prefix</code></p>
+        <p>e.g. <code>'http://deb.debian.org/debian buster main'</code></p>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+## update_deb_packages
+
+
+```python
+update_deb_packages(name, pgp_keys)
+```
+
+A rule that helps keep all deb_package repository rules up to date, by checking current version against the latest available version in the specified sources.
+
+<table class="table table-condensed table-bordered table-params">
+  <colgroup>
+    <col class="col-param" />
+    <col class="param-description" />
+  </colgroup>
+  <thead>
+    <tr>
+      <th colspan="2">Attributes</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>name</code></td>
+      <td>
+        <p><code>rule name, required</code></p>
+      </td>
+    </tr>
+    <tr>
+      <td><code>pgp_keys</code></td>
+      <td>
+        <p><code>a list of trusted PGP keys that were used to sign release information of source repositories</code>
       </td>
     </tr>
   </tbody>
