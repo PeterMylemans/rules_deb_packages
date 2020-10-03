@@ -6,6 +6,8 @@
 
 First, tell bazel to load the rule and its dependencies with a `load()` statement.
 
+**Important:** the tool assumes that go is already available because it has been loaded in by e.g. rules_docker or rules_gazelle.
+
 ```bzl
 load("//:repositories/deps.bzl", "deb_packages_dependencies")
 
