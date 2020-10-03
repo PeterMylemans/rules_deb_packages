@@ -1,6 +1,6 @@
 # Deb Packages Rule
 
-## Gettng started
+## Getting started
 
 `deb_packages` is a repository rule, and therefore made to be used in the `WORKSPACE`.
 
