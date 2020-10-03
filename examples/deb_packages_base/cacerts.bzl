@@ -2,9 +2,11 @@
 
 def _impl(ctx):
     args = "%s %s %s" % (ctx.executable._extract.path, ctx.file.deb.path, ctx.outputs.out.path)
-    ctx.action(command = args,
-            inputs = [ctx.executable._extract, ctx.file.deb],
-            outputs = [ctx.outputs.out])
+    ctx.action(
+        command = args,
+        inputs = [ctx.executable._extract, ctx.file.deb],
+        outputs = [ctx.outputs.out],
+    )
 
 cacerts = rule(
     attrs = {
