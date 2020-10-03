@@ -21,7 +21,7 @@ go_rules_dependencies()
 
 go_register_toolchains()
 
-load("@bazel_gazelle//:deps.bzl", "gazelle_dependencies")
+load("@bazel_gazelle//:deps.bzl", "gazelle_dependencies", "go_repository")
 
 gazelle_dependencies()
 
@@ -48,9 +48,6 @@ load("@io_bazel_rules_docker//repositories:pip_repositories.bzl", "pip_deps")
 
 pip_deps()
 
-# Go dependencies of the update_deb_packages helper tool
-load("@bazel_gazelle//:deps.bzl", "go_repository")
-
 # "golang.org/x/crypto/openpgp"
 go_repository(
     name = "org_golang_x_crypto",
@@ -71,13 +68,6 @@ go_repository(
     commit = "4376b22fb2c4dfda546c972f686310af907819b2",
     importpath = "github.com/stapelberg/godebiancontrol",
 )
-
-# "github.com/bazelbuild/buildtools"
-#go_repository(
-#    name = "com_github_bazelbuild_buildtools",
-#    commit = "9c928655df93b94eeb3dc7f6bd040cee71c7dc59",
-#    importpath = "github.com/bazelbuild/buildtools",
-#)
 
 # Example for using the deb_packages ruleset
 load("//:deb_packages.bzl", "deb_packages")

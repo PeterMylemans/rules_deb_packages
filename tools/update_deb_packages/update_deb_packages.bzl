@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Defines a rule for automatically updating deb_packages repository rules."""
+
 _script_content = """
 BASE=$(pwd)
 WORKSPACE=$(dirname $(readlink WORKSPACE))
@@ -23,11 +25,12 @@ def _update_deb_packages_script_impl(ctx):
     args = ctx.attr.args
     script_content = _script_content.format(update_deb_packages = ctx.file._update_deb_packages.short_path, args = " ".join(args))
     script_file = ctx.actions.declare_file(ctx.label.name + ".bash")
-    ctx.actions.run_shell(outputs = [script_file], command = script_content)
-    return struct(
+    ctx.actions.write(script_file, script_content, True)
+    return [DefaultInfo(
         files = depset([script_file]),
         runfiles = ctx.runfiles([ctx.file._update_deb_packages]),
-    )
+        executable = script_file,
+    )]
 
 _update_deb_packages_script = rule(
     _update_deb_packages_script_impl,
