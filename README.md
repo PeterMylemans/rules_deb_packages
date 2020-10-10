@@ -8,8 +8,6 @@ This is a continuation of the work started in https://github.com/bazelbuild/rule
 
 First, tell bazel to load the rule and its dependencies with a `load()` statement.
 
-**Important:** the tool assumes that go is already available because it has been loaded in by e.g. rules_docker or rules_gazelle.
-
 ```bzl
 http_archive(
     name = "rules_deb_packages",
@@ -106,7 +104,7 @@ The `update_deb_packages` tool can help you with this.
 To use it, first add an update_deb_packages rule to your workspaces top-level BUILD file.
 
 ```bzl
-load("@rules_deb_packages//tools/update_deb_packages:update_deb_packages.bzl", "update_deb_packages")
+load("@rules_deb_packages//:update_deb_packages.bzl", "update_deb_packages")
 
 update_deb_packages(
     name = "update_deb_packages",
