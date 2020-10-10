@@ -75,3 +75,6 @@ def deb_packages_dependencies():
             sha256 = "`sha256sum dist/update_deb_packages_windows_amd64.exe | cut -d " " -f 1 `",
         )
 EOF
+
+tar --sort=name --numeric-owner --owner=0 --group=0  --mtime="$(git show --no-patch --no-notes --pretty='%cI' HEAD)" --create --directory=rules --file=dist/rules_deb_packages.tar.gz .
+sha256sum dist/rules_deb_packages.tar.gz
