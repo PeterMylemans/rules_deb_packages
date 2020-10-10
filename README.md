@@ -11,7 +11,13 @@ First, tell bazel to load the rule and its dependencies with a `load()` statemen
 **Important:** the tool assumes that go is already available because it has been loaded in by e.g. rules_docker or rules_gazelle.
 
 ```bzl
-load("//:repositories/deps.bzl", "deb_packages_dependencies")
+http_archive(
+    name = "rules_deb_packages",
+    sha256 = "e8c14582bc634317f7d029b15304940a0f03f0a7da6f4496126940071e1c4349",
+    urls = ["https://github.com/petermylemans/rules_deb_packages/releases/download/v0.1.0/rules_deb_packages.tar.gz"],
+)
+
+load("@rules_deb_packages//:repositories.bzl", "deb_packages_dependencies")
 
 deb_packages_dependencies()
 ```
