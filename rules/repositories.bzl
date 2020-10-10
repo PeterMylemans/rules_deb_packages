@@ -15,6 +15,7 @@ def deb_packages_dependencies():
     if "update_deb_packages_darwin_amd64" not in excludes:
         http_file(
             name = "update_deb_packages_darwin_amd64",
+            executable = True,
             urls = ["https://github.com/petermylemans/rules_deb_packages/releases/download/v0.1.0/update_deb_packages_darwin_amd64"],
             sha256 = "5df76bb6fc4ed89ab2f6497fc7c03d0eddab01f448a3baa732c914992969881f",
         )
@@ -22,6 +23,7 @@ def deb_packages_dependencies():
     if "update_deb_packages_linux_amd64" not in excludes:
         http_file(
             name = "update_deb_packages_linux_amd64",
+            executable = True,
             urls = ["https://github.com/petermylemans/rules_deb_packages/releases/download/v0.1.0/update_deb_packages_linux_amd64"],
             sha256 = "c16ab719302d231a3b492881cad53fa4fae3aa4b49f1d291f6c0825a60c63fff",
         )
@@ -29,6 +31,7 @@ def deb_packages_dependencies():
     if "update_deb_packages_linux_arm64" not in excludes:
         http_file(
             name = "update_deb_packages_linux_arm64",
+            executable = True,
             urls = ["https://github.com/petermylemans/rules_deb_packages/releases/download/v0.1.0/update_deb_packages_linux_arm64"],
             sha256 = "bde6f8eaad68fd4742c0a25f330e38207ace3dc2205cb4c0d0b9e3b129b0dd57",
         )
@@ -36,6 +39,7 @@ def deb_packages_dependencies():
     if "update_deb_packages_windows_amd64" not in excludes:
         http_file(
             name = "update_deb_packages_windows_amd64",
+            executable = True,
             urls = ["https://github.com/petermylemans/rules_deb_packages/releases/download/v0.1.0/update_deb_packages_windows_amd64.exe"],
             sha256 = "e8a52de54d147cb0f8acde78da1750654ec7fc52f02d4b10e108f9b2f72cc58a",
         )
