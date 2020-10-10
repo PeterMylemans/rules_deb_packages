@@ -8,6 +8,8 @@ def _deb_packages_impl(repository_ctx):
 
     # download each package
     package_rule_dict = {}
+    package_version_dict = {}
+    package_upstream_version_dict = {}
     for package in repository_ctx.attr.packages:
         urllist = []
         for mirror in repository_ctx.attr.mirrors:
@@ -23,9 +25,21 @@ def _deb_packages_impl(repository_ctx):
             executable = False,
         )
         package_rule_dict[package] = "@" + repository_ctx.name + "//debs:" + repository_ctx.attr.packages_sha256[package] + ".deb"
+        package_version = repository_ctx.attr.packages[package].split("_")[1]
+        upstream_version = package_version
+        if package_version.count("-") > 0:
+            upstream_version = package_version.split("-")[0]
+        package_version_dict[package] = package_version
+        package_upstream_version_dict[package] = upstream_version
 
     # create the deb_packages.bzl file that contains the package name : filename mapping
     repository_ctx.file("debs/deb_packages.bzl", repository_ctx.name + " = " + struct(**package_rule_dict).to_json(), executable = False)
+
+    # create the deb_versions.bzl file that contains the package name : full version mapping
+    repository_ctx.file("debs/deb_versions.bzl", repository_ctx.name + "_versions = " + struct(**package_version_dict).to_json(), executable = False)
+
+    # create the deb_upstream_versions.bzl file that contains the package name : upstream version mapping (without debian revisions)
+    repository_ctx.file("debs/deb_upstream_versions.bzl", repository_ctx.name + "_upstream_versions = " + struct(**package_upstream_version_dict).to_json(), executable = False)
 
     # create the BUILD file that globs all the deb files
     repository_ctx.file("debs/BUILD", """
