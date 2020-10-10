@@ -23,12 +23,12 @@ $BASE/{update_deb_packages} {args} $@
 
 def _update_deb_packages_script_impl(ctx):
     args = ctx.attr.args + ["--pgp-key=\"" + f.path + "\"" for f in ctx.files.pgp_keys]
-    script_content = _script_content.format(update_deb_packages = ctx.file._update_deb_packages.short_path, args = " ".join(args))
+    script_content = _script_content.format(update_deb_packages = ctx.file.update_deb_packages_exec.short_path, args = " ".join(args))
     script_file = ctx.actions.declare_file(ctx.label.name + ".bash")
     ctx.actions.write(script_file, script_content, True)
     return [DefaultInfo(
         files = depset([script_file]),
-        runfiles = ctx.runfiles([ctx.file._update_deb_packages]),
+        runfiles = ctx.runfiles([ctx.file.update_deb_packages_exec]),
         executable = script_file,
     )]
 
@@ -37,8 +37,7 @@ _update_deb_packages_script = rule(
     attrs = {
         "args": attr.string_list(),
         "pgp_keys": attr.label_list(),
-        "_update_deb_packages": attr.label(
-            default = Label("@rules_deb_packages//tools/update_deb_packages:update_deb_packages"),
+        "update_deb_packages_exec": attr.label(
             allow_single_file = True,
             executable = True,
             cfg = "host",
@@ -52,6 +51,12 @@ def update_deb_packages(name, pgp_keys, **kwargs):
         name = script_name,
         tags = ["manual"],
         pgp_keys = pgp_keys,
+        update_deb_packages_exec = select({
+            "@bazel_tools//src/conditions:linux_aarch64": Label("@update_deb_packages_linux_arm64//file"),
+            "@bazel_tools//src/conditions:linux_x86_64": Label("@update_deb_packages_linux_amd64//file"),
+            "@bazel_tools//src/conditions:windows": Label("@update_deb_packages_windows_amd64//file"),
+            "@bazel_tools//src/conditions:darwin_x86_64": Label("@update_deb_packages_darwin_amd64//file"),
+        }),
         **kwargs
     )
     native.sh_binary(

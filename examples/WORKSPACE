@@ -1,5 +1,3 @@
-workspace(name = "rules_deb_packages")
-
 # Docker rules dependencies
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive", "http_file")
 
@@ -25,12 +23,17 @@ load("@io_bazel_rules_docker//repositories:pip_repositories.bzl", "pip_deps")
 
 pip_deps()
 
-load("//:repositories/deps.bzl", "deb_packages_dependencies")
+local_repository(
+    name = "rules_deb_packages",
+    path = "../rules",
+)
+
+# Example for using the deb_packages ruleset
+load("@rules_deb_packages//:repositories.bzl", "deb_packages_dependencies")
 
 deb_packages_dependencies()
 
-# Example for using the deb_packages ruleset
-load("//:deb_packages.bzl", "deb_packages")
+load("@rules_deb_packages//:deb_packages.bzl", "deb_packages")
 
 http_file(
     name = "buster_archive_key",

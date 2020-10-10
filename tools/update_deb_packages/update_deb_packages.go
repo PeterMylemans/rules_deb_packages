@@ -238,8 +238,8 @@ func getMapFieldExpr(expr build.Expr) map[string]string {
 
 	m := make(map[string]string)
 	for _, l := range list.List {
-		key := l.(*build.KeyValueExpr).Key.(*build.StringExpr).Value
-		val := l.(*build.KeyValueExpr).Value.(*build.StringExpr).Value
+		key := l.Key.(*build.StringExpr).Value
+		val := l.Value.(*build.StringExpr).Value
 		m[key] = val
 	}
 
@@ -362,8 +362,8 @@ func updateWorkspaceRule(keyring openpgp.EntityList, rule *build.Rule) {
 		}
 	}
 
-	var newPackagesKV []build.Expr
-	var newPackagesSha256KV []build.Expr
+	var newPackagesKV []*build.KeyValueExpr
+	var newPackagesSha256KV []*build.KeyValueExpr
 	for _, pkgName := range packageNames {
 		newPackagesKV = append(newPackagesKV, &build.KeyValueExpr{Key: &build.StringExpr{Value: pkgName}, Value: &build.StringExpr{Value: newPackages[pkgName]}})
 		newPackagesSha256KV = append(newPackagesSha256KV, &build.KeyValueExpr{Key: &build.StringExpr{Value: pkgName}, Value: &build.StringExpr{Value: newPackagesSha256[pkgName]}})
