@@ -23,12 +23,13 @@ load("@io_bazel_rules_docker//repositories:pip_repositories.bzl", "pip_deps")
 
 pip_deps()
 
-local_repository(
+# Example for using the deb_packages ruleset
+http_archive(
     name = "rules_deb_packages",
-    path = "../rules",
+    sha256 = "e8c14582bc634317f7d029b15304940a0f03f0a7da6f4496126940071e1c4349",
+    urls = ["https://github.com/petermylemans/rules_deb_packages/releases/download/v0.1.0/rules_deb_packages.tar.gz"],
 )
 
-# Example for using the deb_packages ruleset
 load("@rules_deb_packages//:repositories.bzl", "deb_packages_dependencies")
 
 deb_packages_dependencies()

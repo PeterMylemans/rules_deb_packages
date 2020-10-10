@@ -76,5 +76,5 @@ def deb_packages_dependencies():
         )
 EOF
 
-tar --sort=name --numeric-owner --owner=0 --group=0  --mtime="$(git show --no-patch --no-notes --pretty='%cI' HEAD)" --create --directory=rules --file=dist/rules_deb_packages.tar.gz .
+tar --sort=name --numeric-owner --owner=0 --group=0  --mtime="$(git show --no-patch --no-notes --pretty='%cI' HEAD)" --create --gzip --directory=rules --file=dist/rules_deb_packages.tar.gz .
 sha256sum dist/rules_deb_packages.tar.gz
