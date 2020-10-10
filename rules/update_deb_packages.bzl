@@ -22,7 +22,7 @@ $BASE/{update_deb_packages} {args} $@
 """
 
 def _update_deb_packages_script_impl(ctx):
-    args = ctx.attr.args + ["--pgp-key=\"" + f.path + "\"" for f in ctx.files.pgp_keys]
+    args = ctx.attr.args + ["--pgp-key=\"" + f.path + "\"" for f in ctx.files.pgp_keys] + ctx.attr.bzl_files
     script_content = _script_content.format(update_deb_packages = ctx.file.update_deb_packages_exec.short_path, args = " ".join(args))
     script_file = ctx.actions.declare_file(ctx.label.name + ".bash")
     ctx.actions.write(script_file, script_content, True)
@@ -36,6 +36,7 @@ _update_deb_packages_script = rule(
     _update_deb_packages_script_impl,
     attrs = {
         "args": attr.string_list(),
+        "bzl_files": attr.string_list(),
         "pgp_keys": attr.label_list(),
         "update_deb_packages_exec": attr.label(
             allow_single_file = True,

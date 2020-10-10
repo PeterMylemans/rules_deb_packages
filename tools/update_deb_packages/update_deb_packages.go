@@ -368,12 +368,12 @@ func updateWorkspaceRule(keyring openpgp.EntityList, rule *build.Rule) {
 		newPackagesKV = append(newPackagesKV, &build.KeyValueExpr{Key: &build.StringExpr{Value: pkgName}, Value: &build.StringExpr{Value: newPackages[pkgName]}})
 		newPackagesSha256KV = append(newPackagesSha256KV, &build.KeyValueExpr{Key: &build.StringExpr{Value: pkgName}, Value: &build.StringExpr{Value: newPackagesSha256[pkgName]}})
 	}
-	rule.SetAttr("packages", &build.DictExpr{List: newPackagesKV})
-	rule.SetAttr("packages_sha256", &build.DictExpr{List: newPackagesSha256KV})
+	rule.SetAttr("packages", &build.DictExpr{List: newPackagesKV, ForceMultiLine: true})
+	rule.SetAttr("packages_sha256", &build.DictExpr{List: newPackagesSha256KV, ForceMultiLine: true})
 }
 
-func updateWorkspace(keyring openpgp.EntityList, workspaceContents []byte) string {
-	f, err := build.Parse("WORKSPACE", workspaceContents)
+func updateFile(keyring openpgp.EntityList, filename string, fileContents []byte) string {
+	f, err := build.Parse(filename, fileContents)
 	logFatalErr(err)
 
 	for _, rule := range f.Rules("deb_packages") {
@@ -412,6 +412,17 @@ func main() {
 	logFatalErr(err)
 	workspacefile.Close()
 
-	err = ioutil.WriteFile("WORKSPACE", []byte(updateWorkspace(keyring, wscontent)), 0664)
+	err = ioutil.WriteFile("WORKSPACE", []byte(updateFile(keyring, "WORKSPACE", wscontent)), 0664)
 	logFatalErr(err)
+
+	for _, fileName := range flag.Args() {
+		bzlFile, err := os.Open(fileName)
+		logFatalErr(err)
+		bzlContent, err := ioutil.ReadAll(bzlFile)
+		logFatalErr(err)
+		workspacefile.Close()
+
+		err = ioutil.WriteFile(fileName, []byte(updateFile(keyring, fileName, bzlContent)), 0664)
+		logFatalErr(err)
+	}
 }

@@ -11,8 +11,8 @@ First, tell bazel to load the rule and its dependencies with a `load()` statemen
 ```bzl
 http_archive(
     name = "rules_deb_packages",
-    sha256 = "e8c14582bc634317f7d029b15304940a0f03f0a7da6f4496126940071e1c4349",
-    urls = ["https://github.com/petermylemans/rules_deb_packages/releases/download/v0.1.0/rules_deb_packages.tar.gz"],
+    sha256 = "1584202216c4ac1b2263fd40865815aba7ae4059360cbe9191000322a45159a0",
+    urls = ["https://github.com/petermylemans/rules_deb_packages/releases/download/v0.2.0/rules_deb_packages.tar.gz"],
 )
 
 load("@rules_deb_packages//:repositories.bzl", "deb_packages_dependencies")
@@ -108,6 +108,9 @@ load("@rules_deb_packages//:update_deb_packages.bzl", "update_deb_packages")
 
 update_deb_packages(
     name = "update_deb_packages",
+    bzl_files = [
+        "debian_buster_amd64.bzl", # if you use macro to import in WORKSPACE otherwise optional
+    ],
     pgp_keys = [
         "@buster_archive_key//file",
         "@buster_security_archive_key//file",
@@ -323,9 +326,16 @@ A rule that helps keep all deb_package repository rules up to date, by checking 
       </td>
     </tr>
     <tr>
+      <td><code>bzl_files</code></td>
+      <td>
+        <p><code>optional list of additional bzl files (path relative to workspace) to scan for deb_packages rules</code>
+        <p>the <code>WORKSPACE</code> file is always scanned
+      </td>
+    </tr>
+    <tr>
       <td><code>pgp_keys</code></td>
       <td>
-        <p><code>a list of trusted PGP keys that were used to sign release information of source repositories</code>
+        <p><code>required list of trusted PGP keys that were used to sign release information of source repositories</code>
       </td>
     </tr>
   </tbody>
