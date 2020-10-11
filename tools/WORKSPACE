@@ -21,13 +21,26 @@ http_archive(
 )
 
 load("@io_bazel_rules_go//go:deps.bzl", "go_register_toolchains", "go_rules_dependencies")
-load("@bazel_gazelle//:deps.bzl", "gazelle_dependencies", "go_repository")
 
 go_rules_dependencies()
 
 go_register_toolchains()
 
-gazelle_dependencies()
+load("@bazel_gazelle//:deps.bzl", "gazelle_dependencies", "go_repository")
+
+go_repository(
+    name = "ag_pault_go_debian",
+    importpath = "pault.ag/go/debian",
+    sum = "h1:IabegBzxTvZzgD7dqzMFlWO8+cBDJ5HKnFAWShkRcLA=",
+    version = "v0.0.0-20200830092410-550b870cda03",
+)
+
+go_repository(
+    name = "ag_pault_go_topsort",
+    importpath = "pault.ag/go/topsort",
+    sum = "h1:WwS7vlB5H2AtwKj1jsGwp2ZLud1x6WXRXh2fXsRqrcA=",
+    version = "v0.0.0-20160530003732-f98d2ad46e1a",
+)
 
 go_repository(
     name = "org_golang_x_crypto",
@@ -36,16 +49,4 @@ go_repository(
     version = "v0.0.0-20201002170205-7f63de1d35b0",
 )
 
-go_repository(
-    name = "com_github_stapelberg_godebiancontrol",
-    importpath = "github.com/stapelberg/godebiancontrol",
-    sum = "h1:9E/p5pk1eLIriw1+F5a0QoyPTnFTdMhwWd9ICYviUCE=",
-    version = "v0.0.0-20180408134423-8c93e189186a",
-)
-
-go_repository(
-    name = "com_github_knqyf263_go_deb_version",
-    importpath = "github.com/knqyf263/go-deb-version",
-    sum = "h1:X4cedH4Kn3JPupAwwWuo4AzYp16P0OyLO9d7OnMZc/c=",
-    version = "v0.0.0-20190517075300-09fca494f03d",
-)
+gazelle_dependencies()

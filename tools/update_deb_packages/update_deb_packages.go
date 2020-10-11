@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"bytes"
 	"compress/gzip"
 	"crypto/sha256"
@@ -19,9 +20,9 @@ import (
 	"strings"
 
 	"github.com/bazelbuild/buildtools/build"
-	version "github.com/knqyf263/go-deb-version"
-	"github.com/stapelberg/godebiancontrol"
 	"golang.org/x/crypto/openpgp"
+	"pault.ag/go/debian/control"
+	"pault.ag/go/debian/version"
 )
 
 func appendUniq(slice []string, v string) []string {
@@ -146,7 +147,7 @@ func checkPgpSignature(keyring openpgp.EntityList, checkfile string, sigfile str
 	}
 }
 
-func getPackages(arch string, distro string, mirrors []string, components []string, keyring openpgp.EntityList) (packages []godebiancontrol.Paragraph) {
+func getPackages(arch string, distro string, mirrors []string, components []string, keyring openpgp.EntityList) (packages []control.BinaryIndex) {
 	releasefile, err := ioutil.TempFile("", "Release")
 	logFatalErr(err)
 
@@ -163,7 +164,9 @@ func getPackages(arch string, distro string, mirrors []string, components []stri
 	os.Remove(releasegpgfile.Name())
 
 	// read/parse Release file
-	release, err := godebiancontrol.Parse(releasefile)
+	releaseReader, err := control.NewParagraphReader(releasefile, nil)
+	logFatalErr(err)
+	release, err := releaseReader.All()
 	logFatalErr(err)
 	os.Remove(releasefile.Name())
 
@@ -172,7 +175,7 @@ func getPackages(arch string, distro string, mirrors []string, components []stri
 	logFatalErr(err)
 
 	// download all binary-<arch> Packages.gz files
-	for _, line := range strings.Split(release[0]["SHA256"], "\n") {
+	for _, line := range strings.Split(release[0].Values["SHA256"], "\n") {
 		fields := strings.Fields(line)
 		if len(fields) == 0 {
 			//last line is an empty line
@@ -223,7 +226,7 @@ func getPackages(arch string, distro string, mirrors []string, components []stri
 	}
 
 	// read/parse merged Packages file
-	parsed, err := godebiancontrol.Parse(packagesfile)
+	parsed, err := control.ParseBinaryIndex(bufio.NewReader(packagesfile))
 	logFatalErr(err)
 	os.Remove(packagesfile.Name())
 
@@ -292,13 +295,13 @@ func updateWorkspaceRule(keyring openpgp.EntityList, rule *build.Rule) {
 	}
 
 	var mirrors = make([]string, 0)
-	var allPackages []godebiancontrol.Paragraph
+	var allPackages []control.BinaryIndex
 	for _, source := range sources {
 		sourceComponents := strings.Split(source, " ")
 		if len(sourceComponents) < 2 {
 			log.Fatalf("Invalid format of source '%s'. Should be <url>|<distro>|<components>", source)
 		}
-		base_url := strings.TrimRight(sourceComponents[0], "/")
+		baseURL := strings.TrimRight(sourceComponents[0], "/")
 		distro := sourceComponents[1]
 		var distroComponents []string
 		if len(sourceComponents) > 2 {
@@ -306,9 +309,9 @@ func updateWorkspaceRule(keyring openpgp.EntityList, rule *build.Rule) {
 		}
 
 		log.Printf("Fetching packages for [%s] %s %s %s", arch, sourceComponents[0], distro, distroComponents)
-		packages := getPackages(arch, distro, []string{base_url}, distroComponents, keyring)
+		packages := getPackages(arch, distro, []string{baseURL}, distroComponents, keyring)
 		allPackages = append(allPackages, packages...)
-		mirrors = appendUniq(mirrors, base_url)
+		mirrors = appendUniq(mirrors, baseURL)
 	}
 
 	newPackages := make(map[string]string)
@@ -323,34 +326,33 @@ func updateWorkspaceRule(keyring openpgp.EntityList, rule *build.Rule) {
 			packname = packlist[0]
 			packversion = packlist[1]
 			var err error
-			targetVersion, err = version.NewVersion(packlist[1])
+			targetVersion, err = version.Parse(packlist[1])
 			logFatalErr(err)
 		} else {
 			packname = packlist[0]
 			packversion = "latest"
 			var err error
-			targetVersion, err = version.NewVersion("0")
+			targetVersion, err = version.Parse("0")
 			logFatalErr(err)
 		}
 
 		done := false
 		for _, pkg := range allPackages {
-			if pkg["Package"] == packname {
-				currentVersion, err := version.NewVersion(pkg["Version"])
-				logFatalErr(err)
+			if pkg.Package == packname {
+				currentVersion := pkg.Version
 				if packversion == "latest" {
 					// iterate over all packages and keep the highest version
-					if targetVersion.LessThan(currentVersion) {
-						newPackages[pack] = pkg["Filename"]
-						newPackagesSha256[pack] = pkg["SHA256"]
+					if version.Compare(targetVersion, currentVersion) < 0 {
+						newPackages[pack] = pkg.Filename
+						newPackagesSha256[pack] = pkg.SHA256
 						targetVersion = currentVersion
 						done = true
 					}
 				} else {
 					// version is fixed, break once found
-					if targetVersion.Equal(currentVersion) {
-						newPackages[pack] = pkg["Filename"]
-						newPackagesSha256[pack] = pkg["SHA256"]
+					if version.Compare(targetVersion, currentVersion) == 0 {
+						newPackages[pack] = pkg.Filename
+						newPackagesSha256[pack] = pkg.SHA256
 						done = true
 						break
 					}
