@@ -8,7 +8,6 @@ go_library(
     deps = [
         "@ag_pault_go_debian//control:go_default_library",
         "@ag_pault_go_debian//version:go_default_library",
-        "@ag_pault_go_topsort//:go_default_library",
         "@com_github_bazelbuild_buildtools//build:go_default_library",
         "@org_golang_x_crypto//openpgp:go_default_library",
     ],

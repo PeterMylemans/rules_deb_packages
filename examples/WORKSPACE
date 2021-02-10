@@ -26,8 +26,8 @@ pip_deps()
 # Example for using the deb_packages ruleset
 http_archive(
     name = "rules_deb_packages",
-    sha256 = "1584202216c4ac1b2263fd40865815aba7ae4059360cbe9191000322a45159a0",
-    urls = ["https://github.com/petermylemans/rules_deb_packages/releases/download/v0.2.0/rules_deb_packages.tar.gz"],
+    sha256 = "d46a7ff31862c35a55deaf81ec0ba2f42233925ac9b7d6f84cd123915d0a540b",
+    urls = ["https://github.com/petermylemans/rules_deb_packages/releases/download/v0.3.0/rules_deb_packages.tar.gz"],
 )
 
 load("@rules_deb_packages//:repositories.bzl", "deb_packages_dependencies")

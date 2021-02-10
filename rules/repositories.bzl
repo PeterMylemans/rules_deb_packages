@@ -16,30 +16,30 @@ def deb_packages_dependencies():
         http_file(
             name = "update_deb_packages_darwin_amd64",
             executable = True,
-            urls = ["https://github.com/petermylemans/rules_deb_packages/releases/download/v0.2.0/update_deb_packages_darwin_amd64"],
-            sha256 = "6e003f8d442a46dfabd832b0eb28fbc119c9bd82c2c67f6f78635299c8c75d47",
+            urls = ["https://github.com/petermylemans/rules_deb_packages/releases/download/v0.3.0/update_deb_packages_darwin_amd64"],
+            sha256 = "c6b353a331201615f9cad0d0a13c71f8330b4468ffa0ebf4574d3ab4563aa240",
         )
 
     if "update_deb_packages_linux_amd64" not in excludes:
         http_file(
             name = "update_deb_packages_linux_amd64",
             executable = True,
-            urls = ["https://github.com/petermylemans/rules_deb_packages/releases/download/v0.2.0/update_deb_packages_linux_amd64"],
-            sha256 = "6960fda49004294b72c0ed9dbb43e65aa509ca267c217ca2e8d71d3cc882ae09",
+            urls = ["https://github.com/petermylemans/rules_deb_packages/releases/download/v0.3.0/update_deb_packages_linux_amd64"],
+            sha256 = "d7f118027c24ca49d4f1d2572c858620b3ac2b61152edc5c32945a063a0c353d",
         )
 
     if "update_deb_packages_linux_arm64" not in excludes:
         http_file(
             name = "update_deb_packages_linux_arm64",
             executable = True,
-            urls = ["https://github.com/petermylemans/rules_deb_packages/releases/download/v0.2.0/update_deb_packages_linux_arm64"],
-            sha256 = "5e6e0251ae374121bf3c530c6df4638eff4c387ae6729087d6973ba25145235a",
+            urls = ["https://github.com/petermylemans/rules_deb_packages/releases/download/v0.3.0/update_deb_packages_linux_arm64"],
+            sha256 = "7b4736bc07309d5712f95903889181a4c1a89c74d2ee91ea1e324fc51df0eda4",
         )
 
     if "update_deb_packages_windows_amd64" not in excludes:
         http_file(
             name = "update_deb_packages_windows_amd64",
             executable = True,
-            urls = ["https://github.com/petermylemans/rules_deb_packages/releases/download/v0.2.0/update_deb_packages_windows_amd64.exe"],
-            sha256 = "19ccbbac416c142313ea20fe577f19db0136e1a6fc27db007b5ffd99e1836854",
+            urls = ["https://github.com/petermylemans/rules_deb_packages/releases/download/v0.3.0/update_deb_packages_windows_amd64.exe"],
+            sha256 = "65a7dbeea67aa7707ea6e679903e2929b4bb7ca4f31d691edeed47b83d523316",
         )
