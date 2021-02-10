@@ -26,7 +26,7 @@ mkdir dist
     bazel build --platforms=@io_bazel_rules_go//go/toolchain:darwin_amd64 //update_deb_packages:update_deb_packages && \
     cp bazel-bin/update_deb_packages/update_deb_packages_/update_deb_packages ../dist/update_deb_packages_darwin_amd64)
 
-version=v0.2.0
+version=v0.3.0
 
 cat > rules/repositories.bzl <<EOF
 # WARNING!!!
