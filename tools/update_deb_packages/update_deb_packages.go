@@ -18,6 +18,7 @@ import (
 	"reflect"
 	"sort"
 	"strings"
+	"time"
 
 	"github.com/bazelbuild/buildtools/build"
 	"golang.org/x/crypto/openpgp"
@@ -278,6 +279,7 @@ func updateWorkspaceRule(keyring openpgp.EntityList, rule *build.Rule) {
 	sources := rule.AttrStrings("sources")
 	packages := getMapFieldExpr(rule.Attr("packages"))
 	packagesSha256 := getMapFieldExpr(rule.Attr("packages_sha256"))
+	timestamp := rule.AttrString("timestamp")
 
 	packageNames := make([]string, 0, len(packages))
 	for p := range packages {
@@ -293,6 +295,8 @@ func updateWorkspaceRule(keyring openpgp.EntityList, rule *build.Rule) {
 	if reflect.DeepEqual(packageNames, packageShaNames) == false {
 		log.Fatalf("Mismatch between package names in packages and packages_sha256 in rule %s.\npackages: %s\npackages_sha256: %s", rule.Name(), packageNames, packageShaNames)
 	}
+
+	t := time.Now()
 
 	var mirrors = make([]string, 0)
 	var allPackages []control.BinaryIndex
@@ -317,6 +321,7 @@ func updateWorkspaceRule(keyring openpgp.EntityList, rule *build.Rule) {
 	newPackages := make(map[string]string)
 	newPackagesSha256 := make(map[string]string)
 
+	updated := false
 	for _, pack := range packageNames {
 		packlist := strings.Split(pack, "=")
 		var packname string
@@ -347,6 +352,7 @@ func updateWorkspaceRule(keyring openpgp.EntityList, rule *build.Rule) {
 						newPackagesSha256[pack] = pkg.SHA256
 						targetVersion = currentVersion
 						done = true
+						updated = true
 					}
 				} else {
 					// version is fixed, break once found
@@ -354,6 +360,7 @@ func updateWorkspaceRule(keyring openpgp.EntityList, rule *build.Rule) {
 						newPackages[pack] = pkg.Filename
 						newPackagesSha256[pack] = pkg.SHA256
 						done = true
+						updated = true
 						break
 					}
 				}
@@ -369,6 +376,10 @@ func updateWorkspaceRule(keyring openpgp.EntityList, rule *build.Rule) {
 	for _, pkgName := range packageNames {
 		newPackagesKV = append(newPackagesKV, &build.KeyValueExpr{Key: &build.StringExpr{Value: pkgName}, Value: &build.StringExpr{Value: newPackages[pkgName]}})
 		newPackagesSha256KV = append(newPackagesSha256KV, &build.KeyValueExpr{Key: &build.StringExpr{Value: pkgName}, Value: &build.StringExpr{Value: newPackagesSha256[pkgName]}})
+	}
+	if updated == true {
+		timestamp = fmt.Sprintf("%d%02d%02dT%02d%02d%02dZ", t.Year(), t.Month(), t.Day(), t.Hour(), t.Minute(), t.Second())
+		rule.SetAttr("timestamp", &build.StringExpr{Value: timestamp})
 	}
 	rule.SetAttr("packages", &build.DictExpr{List: newPackagesKV, ForceMultiLine: true})
 	rule.SetAttr("packages_sha256", &build.DictExpr{List: newPackagesSha256KV, ForceMultiLine: true})
@@ -422,7 +433,7 @@ func main() {
 		logFatalErr(err)
 		bzlContent, err := ioutil.ReadAll(bzlFile)
 		logFatalErr(err)
-		workspacefile.Close()
+		bzlFile.Close()
 
 		err = ioutil.WriteFile(fileName, []byte(updateFile(keyring, fileName, bzlContent)), 0664)
 		logFatalErr(err)

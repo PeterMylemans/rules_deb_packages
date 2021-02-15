@@ -10,6 +10,7 @@ def _deb_packages_impl(repository_ctx):
     package_rule_dict = {}
     package_version_dict = {}
     package_upstream_version_dict = {}
+    timestamp = repository_ctx.attr.timestamp
     for package in repository_ctx.attr.packages:
         urllist = []
         for mirror in repository_ctx.attr.mirrors:
@@ -18,6 +19,7 @@ def _deb_packages_impl(repository_ctx):
                 urllist.append(mirror + repository_ctx.attr.packages[package])
             else:
                 urllist.append(mirror + "/" + repository_ctx.attr.packages[package])
+        urllist.append("https://snapshot.debian.org/archive/debian/" + timestamp + "/" + repository_ctx.attr.packages[package])
         repository_ctx.download(
             urllist,
             output = "debs/" + repository_ctx.attr.packages_sha256[package] + ".deb",
@@ -53,6 +55,9 @@ _deb_packages = repository_rule(
     attrs = {
         "arch": attr.string(
             doc = "the target package architecture, required - e.g. arm64 or amd64",
+        ),
+        "timestamp": attr.string(
+            doc = "the timestamp value of the archive lookup (yyyyMMddTHHmmssZ), required - e.g. 20091004T111800Z",
         ),
         "packages": attr.string_dict(
             doc = "a dictionary mapping packagename to package_path, required - e.g. {\"foo\":\"pool/main/f/foo/foo_1.2.3-0_amd64.deb\"}",
