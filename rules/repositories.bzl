@@ -17,7 +17,7 @@ def deb_packages_dependencies():
             name = "update_deb_packages_darwin_amd64",
             executable = True,
             urls = ["https://github.com/petermylemans/rules_deb_packages/releases/download/v0.3.0/update_deb_packages_darwin_amd64"],
-            sha256 = "c6b353a331201615f9cad0d0a13c71f8330b4468ffa0ebf4574d3ab4563aa240",
+            sha256 = "589090e63d51234526bc3b5edd3b681a50d2441dd4ebf9366b1c618b633fe010",
         )
 
     if "update_deb_packages_linux_amd64" not in excludes:
@@ -25,7 +25,7 @@ def deb_packages_dependencies():
             name = "update_deb_packages_linux_amd64",
             executable = True,
             urls = ["https://github.com/petermylemans/rules_deb_packages/releases/download/v0.3.0/update_deb_packages_linux_amd64"],
-            sha256 = "d7f118027c24ca49d4f1d2572c858620b3ac2b61152edc5c32945a063a0c353d",
+            sha256 = "8b58ab7f0f89ec58a8279648a8d9da87c7172de751d409e27a144dc7ef96d09e",
         )
 
     if "update_deb_packages_linux_arm64" not in excludes:
@@ -33,7 +33,7 @@ def deb_packages_dependencies():
             name = "update_deb_packages_linux_arm64",
             executable = True,
             urls = ["https://github.com/petermylemans/rules_deb_packages/releases/download/v0.3.0/update_deb_packages_linux_arm64"],
-            sha256 = "7b4736bc07309d5712f95903889181a4c1a89c74d2ee91ea1e324fc51df0eda4",
+            sha256 = "e2f4e9376aacea9e40b4169aaf3e2edeff5aaf9480fc695891c1f7692d2b13af",
         )
 
     if "update_deb_packages_windows_amd64" not in excludes:
@@ -41,5 +41,5 @@ def deb_packages_dependencies():
             name = "update_deb_packages_windows_amd64",
             executable = True,
             urls = ["https://github.com/petermylemans/rules_deb_packages/releases/download/v0.3.0/update_deb_packages_windows_amd64.exe"],
-            sha256 = "65a7dbeea67aa7707ea6e679903e2929b4bb7ca4f31d691edeed47b83d523316",
+            sha256 = "f9f7f31459c3ec5ba096de230911cb664f9337b07ac25233b8ff4fa8d3283983",
         )

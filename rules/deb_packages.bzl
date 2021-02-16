@@ -14,7 +14,7 @@ def _deb_packages_impl(repository_ctx):
     for package in repository_ctx.attr.packages:
         urllist = []
         for url in repository_ctx.attr.urls:
-            urllist.append(urls.replace("$(timestamp)",timestamp).replace("$(package_path)", repository_ctx.attr.packages[package]).replace("$(package_file)", repository_ctx.attr.packages[package].rpartition("/")[2]))
+            urllist.append(url.replace("$(timestamp)",timestamp).replace("$(package_path)", repository_ctx.attr.packages[package]).replace("$(package_file)", repository_ctx.attr.packages[package].rpartition("/")[2]))
         repository_ctx.download(
             urllist,
             output = "debs/" + repository_ctx.attr.packages_sha256[package] + ".deb",

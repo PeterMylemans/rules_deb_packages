@@ -288,7 +288,7 @@ func updateWorkspaceRule(keyring openpgp.EntityList, rule *build.Rule) {
 	sort.Strings(packageNames)
 
 	packageShaNames := make([]string, 0, len(packagesSha256))
-	for p := range packages {
+	for p := range packagesSha256 {
 		packageShaNames = append(packageShaNames, p)
 	}
 	sort.Strings(packageShaNames)
@@ -321,7 +321,6 @@ func updateWorkspaceRule(keyring openpgp.EntityList, rule *build.Rule) {
 	newPackages := make(map[string]string)
 	newPackagesSha256 := make(map[string]string)
 
-	updated := false
 	for _, pack := range packageNames {
 		packlist := strings.Split(pack, "=")
 		var packname string
@@ -352,7 +351,6 @@ func updateWorkspaceRule(keyring openpgp.EntityList, rule *build.Rule) {
 						newPackagesSha256[pack] = pkg.SHA256
 						targetVersion = currentVersion
 						done = true
-						updated = true
 					}
 				} else {
 					// version is fixed, break once found
@@ -360,7 +358,6 @@ func updateWorkspaceRule(keyring openpgp.EntityList, rule *build.Rule) {
 						newPackages[pack] = pkg.Filename
 						newPackagesSha256[pack] = pkg.SHA256
 						done = true
-						updated = true
 						break
 					}
 				}
@@ -377,7 +374,7 @@ func updateWorkspaceRule(keyring openpgp.EntityList, rule *build.Rule) {
 		newPackagesKV = append(newPackagesKV, &build.KeyValueExpr{Key: &build.StringExpr{Value: pkgName}, Value: &build.StringExpr{Value: newPackages[pkgName]}})
 		newPackagesSha256KV = append(newPackagesSha256KV, &build.KeyValueExpr{Key: &build.StringExpr{Value: pkgName}, Value: &build.StringExpr{Value: newPackagesSha256[pkgName]}})
 	}
-	if updated == true {
+	if reflect.DeepEqual(packagesSha256, newPackagesSha256) == false {
 		timestamp = fmt.Sprintf("%d%02d%02dT%02d%02d%02dZ", t.Year(), t.Month(), t.Day(), t.Hour(), t.Minute(), t.Second())
 		rule.SetAttr("timestamp", &build.StringExpr{Value: timestamp})
 	}
