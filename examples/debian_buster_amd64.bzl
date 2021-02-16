@@ -4,9 +4,11 @@ def debian_buster_amd64():
     deb_packages(
         name = "debian_buster_amd64_macro",
         arch = "amd64",
-        mirrors = [
-            "http://deb.debian.org/debian",
-            "http://deb.debian.org/debian-security",
+        urls = [
+            "http://deb.debian.org/debian/$(package_path)",
+            "http://deb.debian.org/debian-security/$(package_path)",
+            "https://snapshot.debian.org/archive/debian/$(timestamp)/$(package_path)",
+            "https://snapshot.debian.org/archive/debian-security/$(timestamp)/$(package_path)",
         ],
         packages = {
             "base-files": "pool/main/b/base-files/base-files_10.3+deb10u8_amd64.deb",
@@ -33,4 +35,5 @@ def debian_buster_amd64():
             "http://deb.debian.org/debian buster-updates main",
             "http://deb.debian.org/debian-security buster/updates main",
         ],
+        timestamp = "20210215T214319Z",
     )

@@ -13,13 +13,8 @@ def _deb_packages_impl(repository_ctx):
     timestamp = repository_ctx.attr.timestamp
     for package in repository_ctx.attr.packages:
         urllist = []
-        for mirror in repository_ctx.attr.mirrors:
-            # allow mirror URLs that don't end in /
-            if mirror.endswith("/"):
-                urllist.append(mirror + repository_ctx.attr.packages[package])
-            else:
-                urllist.append(mirror + "/" + repository_ctx.attr.packages[package])
-        urllist.append("https://snapshot.debian.org/archive/debian/" + timestamp + "/" + repository_ctx.attr.packages[package])
+        for url in repository_ctx.attr.urls:
+            urllist.append(urls.replace("$(timestamp)",timestamp).replace("$(package_path)", repository_ctx.attr.packages[package]).replace("$(package_file)", repository_ctx.attr.packages[package].rpartition("/")[2]))
         repository_ctx.download(
             urllist,
             output = "debs/" + repository_ctx.attr.packages_sha256[package] + ".deb",
@@ -65,8 +60,8 @@ _deb_packages = repository_rule(
         "packages_sha256": attr.string_dict(
             doc = "a dictionary mapping packagename to package_hash, required - e.g. {\"foo\":\"1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef\"}",
         ),
-        "mirrors": attr.string_list(
-            doc = "a list of full URLs of the package repository, required - e.g. http://deb.debian.org/debian",
+        "urls": attr.string_list(
+            doc = "a list of full URLs of the package repository, support templating with $(timestamp), $(package_path) and $(package_file), required - e.g. http://deb.debian.org/debian/$(package_path)",
         ),
         "sources": attr.string_list(
             doc = "a list of full sources of the package repository in format similar to apt sources.list without the deb prefix, required - e.g. 'http://deb.debian.org/debian buster main'",
