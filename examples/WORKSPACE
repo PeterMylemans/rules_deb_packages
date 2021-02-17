@@ -26,7 +26,7 @@ pip_deps()
 # Example for using the deb_packages ruleset
 http_archive(
     name = "rules_deb_packages",
-    sha256 = "1ab1e6cc1f55e2b01b23a4ad8e1652e4e1317df6a09ae872ebe0fa1dbbb6504e",
+    sha256 = "28976022963fe8045e6a2c71e080cac75726b4f0a161e223217a7b6e75190cf8",
     urls = ["https://github.com/petermylemans/rules_deb_packages/releases/download/v0.3.0/rules_deb_packages.tar.gz"],
 )
 
