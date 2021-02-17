@@ -314,7 +314,7 @@ Every key name in the `packages` section must exactly match a key name in the `p
     <tr>
       <td><code>timestamp</code></td>
       <td>
-        <p><code>timestamp of the last update (format : 'yyyyMMddTHHmmssZ'), required</code></p>
+        <p><code>timestamp of the last update (format : 'yyyyMMddTHHmmssZ'), not mandatory</code></p>
         <p>e.g. 20210216T115751Z</p>
       </td>
     </tr>
