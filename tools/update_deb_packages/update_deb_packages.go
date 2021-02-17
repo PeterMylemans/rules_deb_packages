@@ -296,7 +296,7 @@ func updateWorkspaceRule(keyring openpgp.EntityList, rule *build.Rule) {
 		log.Fatalf("Mismatch between package names in packages and packages_sha256 in rule %s.\npackages: %s\npackages_sha256: %s", rule.Name(), packageNames, packageShaNames)
 	}
 
-	t := time.Now()
+	t := time.Now().UTC()
 
 	var mirrors = make([]string, 0)
 	var allPackages []control.BinaryIndex
@@ -374,7 +374,7 @@ func updateWorkspaceRule(keyring openpgp.EntityList, rule *build.Rule) {
 		newPackagesKV = append(newPackagesKV, &build.KeyValueExpr{Key: &build.StringExpr{Value: pkgName}, Value: &build.StringExpr{Value: newPackages[pkgName]}})
 		newPackagesSha256KV = append(newPackagesSha256KV, &build.KeyValueExpr{Key: &build.StringExpr{Value: pkgName}, Value: &build.StringExpr{Value: newPackagesSha256[pkgName]}})
 	}
-	if reflect.DeepEqual(packagesSha256, newPackagesSha256) == false {
+	if timestamp != "" && reflect.DeepEqual(packagesSha256, newPackagesSha256) == false {
 		timestamp = fmt.Sprintf("%d%02d%02dT%02d%02d%02dZ", t.Year(), t.Month(), t.Day(), t.Hour(), t.Minute(), t.Second())
 		rule.SetAttr("timestamp", &build.StringExpr{Value: timestamp})
 	}
