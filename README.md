@@ -216,7 +216,7 @@ Now enter this information in the `WORKSPACE` file in a `deb_packages` rule:
 deb_packages(
     name = "my_new_manual_source",
     arch = "amd64",
-        packages = {
+    packages = {
         "libpython2.7-minimal": "pool/main/p/python2.7/libpython2.7-minimal_2.7.9-2+deb8u1_amd64.deb",
     },
     packages_sha256 = {
