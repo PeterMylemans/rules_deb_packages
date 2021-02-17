@@ -14,6 +14,9 @@ def _deb_packages_impl(repository_ctx):
     for package in repository_ctx.attr.packages:
         urllist = []
         for url in repository_ctx.attr.urls:
+            if timestamp == "":
+                if url.find("$(timestamp)") != -1:
+                    fail("Timestamp attribute is not defined but required for the following url : %s" % (url))
             urllist.append(url.replace("$(timestamp)",timestamp).replace("$(package_path)", repository_ctx.attr.packages[package]).replace("$(package_file)", repository_ctx.attr.packages[package].rpartition("/")[2]))
         repository_ctx.download(
             urllist,
