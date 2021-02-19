@@ -30,7 +30,6 @@ def ubuntu_bionic_amd64():
             "http://us.archive.ubuntu.com/ubuntu bionic-backports main",
             "http://security.ubuntu.com/ubuntu bionic-security main universe",
         ],
-        timestamp = "20210216T113512Z",
         urls = [
             "http://us.archive.ubuntu.com/ubuntu/$(package_path)",
             "http://security.ubuntu.com/ubuntu/$(package_path)",
