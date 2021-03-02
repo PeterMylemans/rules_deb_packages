@@ -10,14 +10,18 @@ def _deb_packages_impl(repository_ctx):
     package_rule_dict = {}
     package_version_dict = {}
     package_upstream_version_dict = {}
+    timestamp = repository_ctx.attr.timestamp
+
+    # check that $(timestamp) is not present in the url if the timestamp attribute is not defined 
+    for url in repository_ctx.attr.urls:
+        if timestamp == "":
+            if url.find("$(timestamp)") != -1:
+                fail("Timestamp attribute is not defined but required for the following url : %s" % (url))
+
     for package in repository_ctx.attr.packages:
         urllist = []
-        for mirror in repository_ctx.attr.mirrors:
-            # allow mirror URLs that don't end in /
-            if mirror.endswith("/"):
-                urllist.append(mirror + repository_ctx.attr.packages[package])
-            else:
-                urllist.append(mirror + "/" + repository_ctx.attr.packages[package])
+        for url in repository_ctx.attr.urls:
+            urllist.append(url.replace("$(timestamp)",timestamp).replace("$(package_path)", repository_ctx.attr.packages[package]).replace("$(package_file)", repository_ctx.attr.packages[package].rpartition("/")[2]))
         repository_ctx.download(
             urllist,
             output = "debs/" + repository_ctx.attr.packages_sha256[package] + ".deb",
@@ -54,14 +58,17 @@ _deb_packages = repository_rule(
         "arch": attr.string(
             doc = "the target package architecture, required - e.g. arm64 or amd64",
         ),
+        "timestamp": attr.string(
+            doc = "the timestamp value of the archive lookup (yyyyMMddTHHmmssZ), required - e.g. 20091004T111800Z",
+        ),
         "packages": attr.string_dict(
             doc = "a dictionary mapping packagename to package_path, required - e.g. {\"foo\":\"pool/main/f/foo/foo_1.2.3-0_amd64.deb\"}",
         ),
         "packages_sha256": attr.string_dict(
             doc = "a dictionary mapping packagename to package_hash, required - e.g. {\"foo\":\"1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef\"}",
         ),
-        "mirrors": attr.string_list(
-            doc = "a list of full URLs of the package repository, required - e.g. http://deb.debian.org/debian",
+        "urls": attr.string_list(
+            doc = "a list of full URLs of the package repository, support templating with $(timestamp), $(package_path) and $(package_file), required - e.g. http://deb.debian.org/debian/$(package_path)",
         ),
         "sources": attr.string_list(
             doc = "a list of full sources of the package repository in format similar to apt sources.list without the deb prefix, required - e.g. 'http://deb.debian.org/debian buster main'",

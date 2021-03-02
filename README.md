@@ -30,10 +30,6 @@ load("@rules_deb_packages//:deb_packages.bzl", "deb_packages")
 deb_packages(
     name = "debian_buster_amd64",
     arch = "amd64",
-    mirrors = [
-        "http://deb.debian.org/debian",
-        "http://deb.debian.org/debian-security",
-    ],
     packages = {
         "base-files": "pool/main/b/base-files/base-files_10.3+deb10u8_amd64.deb",
         "busybox": "pool/main/b/busybox/busybox_1.30.1-4_amd64.deb",
@@ -58,6 +54,13 @@ deb_packages(
         "http://deb.debian.org/debian buster main",
         "http://deb.debian.org/debian buster-updates main",
         "http://deb.debian.org/debian-security buster/updates main",
+    ],
+    timestamp = "20210216T115751Z",
+    urls = [
+        "http://deb.debian.org/debian/$(package_path)",
+        "http://deb.debian.org/debian-security/$(package_path)",
+        "https://snapshot.debian.org/archive/debian/$(timestamp)/$(package_path)",  # Needed in case of supersed archive no more available on the mirrors
+        "https://snapshot.debian.org/archive/debian-security/$(timestamp)/$(package_path)",  # Needed in case of supersed archive no more available on the mirrors
     ],
 )
 ```
@@ -142,10 +145,6 @@ Next create a `deb_packages` rule in your WORKSPACE file without any packages de
 deb_packages(
     name = "debian_buster_amd64",
     arch = "amd64",
-    mirrors = [
-        "http://deb.debian.org/debian",
-        "http://deb.debian.org/debian-security",
-    ],
     packages = {
         "base-files": "",
         "busybox": "",
@@ -158,6 +157,13 @@ deb_packages(
         "http://deb.debian.org/debian buster main",
         "http://deb.debian.org/debian buster-updates main",
         "http://deb.debian.org/debian-security buster/updates main",
+    ],
+    timestamp = "20210216T115751Z",
+    urls = [
+        "http://deb.debian.org/debian/$(package_path)",
+        "http://deb.debian.org/debian-security/$(package_path)",
+        "https://snapshot.debian.org/archive/debian/$(timestamp)/$(package_path)",  # Needed in case of supersed archive no more available on the mirrors
+        "https://snapshot.debian.org/archive/debian-security/$(timestamp)/$(package_path)",  # Needed in case of supersed archive no more available on the mirrors
     ],
 )
 ```
@@ -210,16 +216,19 @@ Now enter this information in the `WORKSPACE` file in a `deb_packages` rule:
 deb_packages(
     name = "my_new_manual_source",
     arch = "amd64",
-    mirrors = [
-        "http://deb.debian.org/debian",
-        "http://my.private.mirror/debian",
-    ],
     packages = {
         "libpython2.7-minimal": "pool/main/p/python2.7/libpython2.7-minimal_2.7.9-2+deb8u1_amd64.deb",
     },
     packages_sha256 = {
         "libpython2.7-minimal": "916e2c541aa954239cb8da45d1d7e4ecec232b24d3af8982e76bf43d3e1758f3",
     },
+    timestamp = "20210216T115751Z",
+    urls = [
+        "http://deb.debian.org/debian/$(package_path)",
+        "http://deb.debian.org/debian-security/$(package_path)",
+        "https://snapshot.debian.org/archive/debian/$(timestamp)/$(package_path)",  # Needed in case of supersed archive no more available on the mirrors
+        "https://snapshot.debian.org/archive/debian-security/$(timestamp)/$(package_path)",  # Needed in case of supersed archive no more available on the mirrors
+    ],
 )
 ```
 
@@ -266,11 +275,17 @@ Every key name in the `packages` section must exactly match a key name in the `p
       </td>
     </tr>
     <tr>
-      <td><code>mirrors</code></td>
+      <td><code>urls</code></td>
       <td>
         <p><code>the full url of the package repository, required</code></p>
-        <p>All of these mirrors are expected to host a Debian style mirror and to host the same versions of files</p>
-        <p>Many mirrors host their packages in a subdirectory (e.g. <code>http://deb.debian.org/debian</code> instead of <code>http://deb.debian.org</code>), in that case use the former URL.</p>
+        <p>We need the full url needed for accessing the required deb package files.</p>
+        <p>These urls can be based on debian or ubuntu mirrors and support templating with the following variables :</p>
+        <p>
+          <li>$(package_path) : will be replaced with the full package path, eg : pool/main/b/base-files/base-files_10.3+deb10u8_amd64.deb</li>
+          <li>$(package_name) : will be replaced with the package name (after the last '/' of the package path), eg: base-files_10.3+deb10u8_amd64.deb</li>
+          <li>$(timestamp) : will be replaced wit he timestamp attribute value, eg : 20210216T115751Z</li>
+        </p>
+        <p>e.g. <code>https://snapshot.debian.org/archive/debian-security/$(timestamp)/$(package_path)</code></p>
       </td>
     </tr>
     <tr>
@@ -294,6 +309,13 @@ Every key name in the `packages` section must exactly match a key name in the `p
       <td>
         <p><code>a list of full sources of the package repository in format similar to apt sources.list without the deb prefix</code></p>
         <p>e.g. <code>'http://deb.debian.org/debian buster main'</code></p>
+      </td>
+    </tr>
+    <tr>
+      <td><code>timestamp</code></td>
+      <td>
+        <p><code>timestamp of the last update (format : 'yyyyMMddTHHmmssZ'), not mandatory</code></p>
+        <p>e.g. 20210216T115751Z</p>
       </td>
     </tr>
   </tbody>
