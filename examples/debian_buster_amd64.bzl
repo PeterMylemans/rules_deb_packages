@@ -1,3 +1,7 @@
+"""
+Debian buster dependencies
+"""
+
 load("@rules_deb_packages//:deb_packages.bzl", "deb_packages")
 
 def debian_buster_amd64():
