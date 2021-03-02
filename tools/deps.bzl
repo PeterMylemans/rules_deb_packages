@@ -1,4 +1,4 @@
-"""This modules contains all go dependencies for the tools project."
+"""This modules contains all go dependencies for the tools project."""
 
 load("@bazel_gazelle//:deps.bzl", "go_repository")
 
