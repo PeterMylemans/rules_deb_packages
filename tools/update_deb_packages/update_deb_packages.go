@@ -86,7 +86,7 @@ func getFileFromURLList(filepath string, filename string, urls []string) {
 			break
 		}
 	}
-	if success == false {
+	if !success {
 		log.Fatalf("No mirror had the file %s available.\n URLS: %s", filename, urls)
 	}
 }
@@ -117,7 +117,7 @@ func compareFileWithHash(filepath string, sha256Hash string) bool {
 
 	actual := h.Sum(nil)
 
-	if bytes.Equal(actual, target) != true {
+	if !bytes.Equal(actual, target) {
 		log.Printf("Hash mismatch: Expected %x, got %x", target, actual)
 	}
 
@@ -199,7 +199,7 @@ func getPackages(arch string, distro string, mirrors []string, components []stri
 			logFatalErr(err)
 			getFileFromMirror(tmpPackagesfile.Name(), path, distro, mirrors)
 			// check hash of Packages.gz files
-			if compareFileWithHash(tmpPackagesfile.Name(), hash) != true {
+			if !compareFileWithHash(tmpPackagesfile.Name(), hash) {
 				log.Fatalf("Downloaded file %s corrupt", path)
 			}
 
@@ -292,7 +292,7 @@ func updateWorkspaceRule(keyring openpgp.EntityList, rule *build.Rule) {
 		packageShaNames = append(packageShaNames, p)
 	}
 	sort.Strings(packageShaNames)
-	if reflect.DeepEqual(packageNames, packageShaNames) == false {
+	if !reflect.DeepEqual(packageNames, packageShaNames) {
 		log.Fatalf("Mismatch between package names in packages and packages_sha256 in rule %s.\npackages: %s\npackages_sha256: %s", rule.Name(), packageNames, packageShaNames)
 	}
 
@@ -363,7 +363,7 @@ func updateWorkspaceRule(keyring openpgp.EntityList, rule *build.Rule) {
 				}
 			}
 		}
-		if done == false {
+		if !done {
 			log.Fatalf("Package %s isn't available (rule: %s)", pack, rule.Name())
 		}
 	}
@@ -374,7 +374,7 @@ func updateWorkspaceRule(keyring openpgp.EntityList, rule *build.Rule) {
 		newPackagesKV = append(newPackagesKV, &build.KeyValueExpr{Key: &build.StringExpr{Value: pkgName}, Value: &build.StringExpr{Value: newPackages[pkgName]}})
 		newPackagesSha256KV = append(newPackagesSha256KV, &build.KeyValueExpr{Key: &build.StringExpr{Value: pkgName}, Value: &build.StringExpr{Value: newPackagesSha256[pkgName]}})
 	}
-	if timestamp != "" && reflect.DeepEqual(packagesSha256, newPackagesSha256) == false {
+	if timestamp != "" && !reflect.DeepEqual(packagesSha256, newPackagesSha256) {
 		timestamp = fmt.Sprintf("%d%02d%02dT%02d%02d%02dZ", t.Year(), t.Month(), t.Day(), t.Hour(), t.Minute(), t.Second())
 		rule.SetAttr("timestamp", &build.StringExpr{Value: timestamp})
 	}
