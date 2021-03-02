@@ -1,3 +1,5 @@
+"""This module defines Ubuntu Bionic dependencies."""
+
 load("@rules_deb_packages//:deb_packages.bzl", "deb_packages")
 
 def ubuntu_bionic_amd64():

@@ -12,7 +12,7 @@ def _deb_packages_impl(repository_ctx):
     package_upstream_version_dict = {}
     timestamp = repository_ctx.attr.timestamp
 
-    # check that $(timestamp) is not present in the url if the timestamp attribute is not defined 
+    # check that $(timestamp) is not present in the url if the timestamp attribute is not defined
     for url in repository_ctx.attr.urls:
         if timestamp == "":
             if url.find("$(timestamp)") != -1:
@@ -21,7 +21,7 @@ def _deb_packages_impl(repository_ctx):
     for package in repository_ctx.attr.packages:
         urllist = []
         for url in repository_ctx.attr.urls:
-            urllist.append(url.replace("$(timestamp)",timestamp).replace("$(package_path)", repository_ctx.attr.packages[package]).replace("$(package_file)", repository_ctx.attr.packages[package].rpartition("/")[2]))
+            urllist.append(url.replace("$(timestamp)", timestamp).replace("$(package_path)", repository_ctx.attr.packages[package]).replace("$(package_file)", repository_ctx.attr.packages[package].rpartition("/")[2]))
         repository_ctx.download(
             urllist,
             output = "debs/" + repository_ctx.attr.packages_sha256[package] + ".deb",

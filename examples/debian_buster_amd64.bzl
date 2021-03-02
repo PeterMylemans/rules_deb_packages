@@ -1,6 +1,4 @@
-"""
-Debian buster dependencies
-"""
+"""This module defines Debian Buster dependencies."""
 
 load("@rules_deb_packages//:deb_packages.bzl", "deb_packages")
 

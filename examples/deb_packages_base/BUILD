@@ -2,7 +2,6 @@ load("@io_bazel_rules_docker//container:container.bzl", "container_image")
 load("@debian_buster_amd64//debs:deb_packages.bzl", "debian_buster_amd64")
 load("@ubuntu_bionic_amd64//debs:deb_packages.bzl", "ubuntu_bionic_amd64")
 
-
 container_image(
     name = "base_buster",
     debs = [
