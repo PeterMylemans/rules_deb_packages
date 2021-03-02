@@ -26,27 +26,10 @@ go_rules_dependencies()
 
 go_register_toolchains(go_version = "1.15.5")
 
-load("@bazel_gazelle//:deps.bzl", "gazelle_dependencies", "go_repository")
+load("@bazel_gazelle//:deps.bzl", "gazelle_dependencies")
+load("//:deps.bzl", "go_dependencies")
 
-go_repository(
-    name = "ag_pault_go_debian",
-    importpath = "pault.ag/go/debian",
-    sum = "h1:uS/IpqiZ0wDqMCeB5KT+GS/8FDNR07nZaNdguNe53V4=",
-    version = "v0.11.0",
-)
-
-go_repository(
-    name = "ag_pault_go_topsort",
-    importpath = "pault.ag/go/topsort",
-    sum = "h1:WwS7vlB5H2AtwKj1jsGwp2ZLud1x6WXRXh2fXsRqrcA=",
-    version = "v0.0.0-20160530003732-f98d2ad46e1a",
-)
-
-go_repository(
-    name = "org_golang_x_crypto",
-    importpath = "golang.org/x/crypto",
-    sum = "h1:DN0cp81fZ3njFcrLCytUHRSUkqBjfTo4Tx9RJTWs0EY=",
-    version = "v0.0.0-20201221181555-eec23a3978ad",
-)
+# gazelle:repository_macro deps.bzl%go_dependencies
+go_dependencies()
 
 gazelle_dependencies()
