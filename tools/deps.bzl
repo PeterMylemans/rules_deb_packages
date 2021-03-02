@@ -2,6 +2,7 @@
 
 load("@bazel_gazelle//:deps.bzl", "go_repository")
 
+# buildifier: disable=function-docstring
 def go_dependencies():
     go_repository(
         name = "ag_pault_go_debian",
