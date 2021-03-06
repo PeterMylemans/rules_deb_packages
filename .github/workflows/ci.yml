@@ -15,8 +15,11 @@ jobs:
         with:
           go-version: 1.16
 
+      - name: Get the version
+        run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
+
       - name: Make all artefacts
-        run: make
+        run: make version=${{ steps.get_version.outputs.VERSION }}
 
       - name: Release
         uses: softprops/action-gh-release@v1
