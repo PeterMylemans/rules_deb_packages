@@ -29,7 +29,7 @@ def deb_packages_dependencies():
             name = "update_deb_packages_darwin_amd64",
             executable = True,
             urls = ["https://github.com/petermylemans/rules_deb_packages/releases/download/$version/update_deb_packages_darwin_amd64"],
-            sha256 = "`sha256sum ${ARTIFACTS_DIR}/update_deb_packages_darwin_amd64 | cut -d " " -f 1 `",
+            sha256 = "$(sha256sum ${ARTIFACTS_DIR}/update_deb_packages_darwin_amd64 | cut -d " " -f 1 )",
         )
 
     if "update_deb_packages_linux_amd64" not in excludes:
@@ -37,7 +37,7 @@ def deb_packages_dependencies():
             name = "update_deb_packages_linux_amd64",
             executable = True,
             urls = ["https://github.com/petermylemans/rules_deb_packages/releases/download/$version/update_deb_packages_linux_amd64"],
-            sha256 = "`sha256sum ${ARTIFACTS_DIR}/update_deb_packages_linux_amd64 | cut -d " " -f 1 `",
+            sha256 = "$(sha256sum ${ARTIFACTS_DIR}/update_deb_packages_linux_amd64 | cut -d " " -f 1 )",
         )
 
     if "update_deb_packages_linux_arm64" not in excludes:
@@ -45,7 +45,7 @@ def deb_packages_dependencies():
             name = "update_deb_packages_linux_arm64",
             executable = True,
             urls = ["https://github.com/petermylemans/rules_deb_packages/releases/download/$version/update_deb_packages_linux_arm64"],
-            sha256 = "`sha256sum ${ARTIFACTS_DIR}/update_deb_packages_linux_arm64 | cut -d " " -f 1 `",
+            sha256 = "$(sha256sum ${ARTIFACTS_DIR}/update_deb_packages_linux_arm64 | cut -d " " -f 1 )",
         )
 
     if "update_deb_packages_windows_amd64" not in excludes:
@@ -53,7 +53,7 @@ def deb_packages_dependencies():
             name = "update_deb_packages_windows_amd64",
             executable = True,
             urls = ["https://github.com/petermylemans/rules_deb_packages/releases/download/$version/update_deb_packages_windows_amd64.exe"],
-            sha256 = "`sha256sum ${ARTIFACTS_DIR}/update_deb_packages_windows_amd64.exe | cut -d " " -f 1 `",
+            sha256 = "$(sha256sum ${ARTIFACTS_DIR}/update_deb_packages_windows_amd64.exe | cut -d " " -f 1 )",
         )
 EOF
 }
