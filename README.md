@@ -11,8 +11,8 @@ First, tell bazel to load the rule and its dependencies with a `load()` statemen
 ```bzl
 http_archive(
     name = "rules_deb_packages",
-    sha256 = "d46a7ff31862c35a55deaf81ec0ba2f42233925ac9b7d6f84cd123915d0a540b",
-    urls = ["https://github.com/petermylemans/rules_deb_packages/releases/download/v0.3.0/rules_deb_packages.tar.gz"],
+    sha256 = "674ce7b66c345aaa9ab898608618a0a0db857cbed8e8d0794ca46e375fd5ff76",
+    urls = ["https://github.com/petermylemans/rules_deb_packages/releases/download/v0.4.0/rules_deb_packages.tar.gz"],
 )
 
 load("@rules_deb_packages//:repositories.bzl", "deb_packages_dependencies")

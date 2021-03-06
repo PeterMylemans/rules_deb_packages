@@ -26,8 +26,8 @@ pip_deps()
 # Example for using the deb_packages ruleset
 http_archive(
     name = "rules_deb_packages",
-    sha256 = "28976022963fe8045e6a2c71e080cac75726b4f0a161e223217a7b6e75190cf8",
-    urls = ["https://github.com/petermylemans/rules_deb_packages/releases/download/v0.3.0/rules_deb_packages.tar.gz"],
+    sha256 = "674ce7b66c345aaa9ab898608618a0a0db857cbed8e8d0794ca46e375fd5ff76",
+    urls = ["https://github.com/petermylemans/rules_deb_packages/releases/download/v0.4.0/rules_deb_packages.tar.gz"],
 )
 
 load("@rules_deb_packages//:repositories.bzl", "deb_packages_dependencies")
@@ -62,9 +62,9 @@ deb_packages(
         "busybox": "pool/main/b/busybox/busybox_1.30.1-4_amd64.deb",
         "ca-certificates": "pool/main/c/ca-certificates/ca-certificates_20200601~deb10u2_all.deb",
         "libc6": "pool/main/g/glibc/libc6_2.28-10_amd64.deb",
-        "libssl1.1": "pool/main/o/openssl/libssl1.1_1.1.1d-0+deb10u4_amd64.deb",
+        "libssl1.1": "pool/updates/main/o/openssl/libssl1.1_1.1.1d-0+deb10u5_amd64.deb",
         "netbase": "pool/main/n/netbase/netbase_5.6_all.deb",
-        "openssl": "pool/main/o/openssl/openssl_1.1.1d-0+deb10u4_amd64.deb",
+        "openssl": "pool/updates/main/o/openssl/openssl_1.1.1d-0+deb10u5_amd64.deb",
         "tzdata": "pool/main/t/tzdata/tzdata_2021a-0+deb10u1_all.deb",
     },
     packages_sha256 = {
@@ -72,9 +72,9 @@ deb_packages(
         "busybox": "1e32ea742bddec4ed5a530ee2f423cdfc297c6280bfbb45c97bf12eecf5c3ec1",
         "ca-certificates": "a9e267a24088c793a9cf782455fd344db5fdced714f112a8857c5bfd07179387",
         "libc6": "6f703e27185f594f8633159d00180ea1df12d84f152261b6e88af75667195a79",
-        "libssl1.1": "b02b468f0fad929b5d2b38ae05607c22c4f1ef70adc2688fb02b9d9514d6ac51",
+        "libssl1.1": "1741ec08b10caa4d3c8a165768323a14946278a7e6fb9cd56ae59cf4fe1ef970",
         "netbase": "baf0872964df0ccb10e464b47d995acbba5a0d12a97afe2646d9a6bb97e8d79d",
-        "openssl": "fa997ab8745f28ea3553ebc623872bb6809cc94898f6c72d81a757d9ee47dfe3",
+        "openssl": "f4c32a3f851adeb0145edafb8ea271aed8330ee864de23f155f4141a81dc6e10",
         "tzdata": "00da63f221b9afa6bc766742807e398cf183565faba339649bafa3f93375fbcb",
     },
     sources = [
@@ -82,7 +82,7 @@ deb_packages(
         "http://deb.debian.org/debian buster-updates main",
         "http://deb.debian.org/debian-security buster/updates main",
     ],
-    timestamp = "20210216T115751Z",
+    timestamp = "20210306T084907Z",
     urls = [
         "http://deb.debian.org/debian/$(package_path)",
         "http://deb.debian.org/debian-security/$(package_path)",
@@ -99,9 +99,9 @@ deb_packages(
         "busybox": "pool/universe/b/busybox/busybox_1.27.2-2ubuntu3.3_amd64.deb",
         "ca-certificates": "pool/main/c/ca-certificates/ca-certificates_20210119~18.04.1_all.deb",
         "libc6": "pool/main/g/glibc/libc6_2.27-3ubuntu1.4_amd64.deb",
-        "libssl1.1": "pool/main/o/openssl/libssl1.1_1.1.1-1ubuntu2.1~18.04.7_amd64.deb",
+        "libssl1.1": "pool/main/o/openssl/libssl1.1_1.1.1-1ubuntu2.1~18.04.8_amd64.deb",
         "netbase": "pool/main/n/netbase/netbase_5.4_all.deb",
-        "openssl": "pool/main/o/openssl/openssl_1.1.1-1ubuntu2.1~18.04.7_amd64.deb",
+        "openssl": "pool/main/o/openssl/openssl_1.1.1-1ubuntu2.1~18.04.8_amd64.deb",
         "tzdata": "pool/main/t/tzdata/tzdata_2021a-0ubuntu0.18.04_all.deb",
     },
     packages_sha256 = {
@@ -109,9 +109,9 @@ deb_packages(
         "busybox": "a1b5ea4a7eb95fe3cadca78406af57c9bdb3b024d5060400fdff5344179ab1b0",
         "ca-certificates": "0eef06ee5c975fdf029b7b26d12701441cfd22c556927772b236f2bc5b39cc2e",
         "libc6": "46d39b8965f35457ce5db62662832c095fd7e01e72093da99ae025eb8e12bbe5",
-        "libssl1.1": "6cba7ab11adfe998afb8a1c1b85bf1cb0449101cb4160402bac2507ccc72b632",
+        "libssl1.1": "a516bc4ccd2b1f09d1e4ce7ea11c3b4986cfe3bc07b448eac6090f59c1ed0129",
         "netbase": "cbda1c8035cd1fe0b1fb09b456892c0bb868657bfe02da82f0b16207d391145e",
-        "openssl": "26eec06c925b5468e8c80cd0645c62e0ff613e60a074e5bf92dd9df127f67660",
+        "openssl": "a45d82b1e535707ed31af599e12111449becd6c9714cd8b50a82044508da0f3a",
         "tzdata": "7a28ea35faffb239a92f8f4ee204d64d5bec2ad308b04118d046334f44152e02",
     },
     sources = [
