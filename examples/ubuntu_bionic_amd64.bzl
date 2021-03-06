@@ -35,6 +35,6 @@ def ubuntu_bionic_amd64():
         urls = [
             "http://us.archive.ubuntu.com/ubuntu/$(package_path)",
             "http://security.ubuntu.com/ubuntu/$(package_path)",
-            "https://launchpad.net/ubuntu/+archive/primary/+files/$(package_file)",  # Needed in case of supersed archive no more available on the mirrors
+            "https://launchpad.net/ubuntu/+archive/primary/+files/$(package_file)",  # Needed in case of superseded archive no more available on the mirrors
         ],
     )
