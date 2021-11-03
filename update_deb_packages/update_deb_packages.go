@@ -3,7 +3,6 @@ package main
 import (
 	"bufio"
 	"bytes"
-	"compress/gzip"
 	"crypto/sha256"
 	"encoding/hex"
 	"flag"
@@ -21,6 +20,7 @@ import (
 	"time"
 
 	"github.com/bazelbuild/buildtools/build"
+	"github.com/ulikunitz/xz"
 	"golang.org/x/crypto/openpgp"
 	"pault.ag/go/debian/control"
 	"pault.ag/go/debian/version"
@@ -194,7 +194,7 @@ func getPackages(arch string, distro string, mirrors []string, components []stri
 				}
 			}
 		}
-		if isAcceptedComponent && strings.HasSuffix(path, "/binary-"+arch+"/Packages.gz") {
+		if isAcceptedComponent && strings.HasSuffix(path, "/binary-"+arch+"/Packages.xz") {
 			tmpPackagesfile, err := ioutil.TempFile("", "Packages")
 			logFatalErr(err)
 			getFileFromMirror(tmpPackagesfile.Name(), path, distro, mirrors)
@@ -208,11 +208,10 @@ func getPackages(arch string, distro string, mirrors []string, components []stri
 			logFatalErr(err)
 			defer handle.Close()
 
-			zipReader, err := gzip.NewReader(handle)
+			xzReader, err := xz.NewReader(handle)
 			logFatalErr(err)
-			defer zipReader.Close()
 
-			content, err := ioutil.ReadAll(zipReader)
+			content, err := ioutil.ReadAll(xzReader)
 			logFatalErr(err)
 			os.Remove(tmpPackagesfile.Name())
 
